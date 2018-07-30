@@ -1,10 +1,10 @@
 <template>
 	<div class="homeSubNavbar">
-		<div class="mui-scroll-wrapper">
-			<div class="mui-scroll">
-				<ul class="itemlist">
-					 <li v-for="item in  itemList" :key="item.id" @click="_clickItem(id)">{{item.name}}</li>
-				</ul>
+		<div class="mui-scroll-wrapper mui-slider-indicator mui-segmented-control mui-segmented-control-inverted">
+			<div class="mui-scroll itemlist">
+				<a v-for="item in  itemList" :key="item.id" @click="_clickItem(id)">
+					{{item.name}}
+				</a>
 			</div>
 		</div>
 		<div class="addBtn"></div>
@@ -50,11 +50,12 @@ export default {
 }
 .itemlist{
 	white-space: nowrap;
-	li{
+	a{
 		display: inline-block;
 		font-size:14px;
 		margin-right:25px;
 		line-height: 40px;
+		color:#333;
 	}
 } 
 </style>

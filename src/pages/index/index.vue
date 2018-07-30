@@ -30,16 +30,17 @@ import homeSubNavbar from '~c/homeSubNavbar'
 			mui.init({
 			  pullRefresh : {
 				container:"#refreshContainer",//下拉刷新容器标识，querySelector能定位的css选择器均可，比如：id、.class等
+				up : {
+					contentrefresh : "正在加载...",//可选，正在加载状态时，上拉加载控件上显示的标题内容
+					contentnomore:'没有更多数据了',//可选，请求完毕若没有更多数据时显示的提醒内容；
+					callback :this._pullup //必选，刷新函数，根据具体业务来编写，比如通过ajax从服务器获取新数据；
+				},
 				down : {
 				  style:'circle',//必选，下拉刷新样式，目前支持原生5+ ‘circle’ 样式
 				  auto: false,//可选,默认false.首次加载自动上拉刷新一次
 				  callback :this._pulldown //必选，刷新函数，根据具体业务来编写，比如通过ajax从服务器获取新数据；
-				},
-				up : {
-				  contentrefresh : "正在加载...",//可选，正在加载状态时，上拉加载控件上显示的标题内容
-				  contentnomore:'没有更多数据了',//可选，请求完毕若没有更多数据时显示的提醒内容；
-				  callback :this._pullup //必选，刷新函数，根据具体业务来编写，比如通过ajax从服务器获取新数据；
 				}
+
 			  },
 			  
 			});
@@ -67,12 +68,8 @@ import homeSubNavbar from '~c/homeSubNavbar'
 	}
 </script>
 <style lang="less" scoped>
-	
-</style>
-<style lang="less">
 	.home-wrapper{
-		padding-top:100px;
-
+		padding-top:90px;
 	}
 	.subBar{
 		position:fixed;
@@ -80,5 +77,8 @@ import homeSubNavbar from '~c/homeSubNavbar'
 		left:0;
 		width:100%;
 		height:40px;
+	}
+	/deep/ .mui-pull-top-pocket{
+		top:80px;
 	}
 </style>
