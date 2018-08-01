@@ -65,7 +65,7 @@
     "npm": ">= 3.0.0"
   },
   "browserslist": [
-   "iOS >= 7",
+    "iOS >= 7",
     "Android > 4.1",
     "Firefox > 20",
     "last 2 versions"

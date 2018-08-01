@@ -3,7 +3,7 @@
 		<div class="mui-scroll-wrapper">
 			<div class="mui-scroll">
 				<ul class="itemlist">
-					 <li v-for="item in  itemList" :key="item.id" @click="_clickItem(id)">{{item.name}}</li>
+					 <li v-for="item in  itemList" :class="{'selected':activeItem==item.id}" :key="item.id" @click="_clickItem(item.id)">{{item.name}}</li>
 				</ul>
 			</div>
 		</div>
@@ -17,7 +17,7 @@ export default {
   name: 'homeSubNavbar',
   data () {
     return {
-       activeItem:0,
+     activeItem:0,
 	   itemList:[{name:'推荐',id:0},{name:'附近',id:1},{name:'榜单',id:3},{name:'明星',id:4},{name:'搞笑',id:5},{name:'情感',id:6},{name:'新时代',id:7}]
     }
   },
@@ -55,6 +55,9 @@ export default {
 		font-size:14px;
 		margin-right:25px;
 		line-height: 40px;
+		&.selected{
+			color:@c2
+		}
 	}
 } 
 </style>
