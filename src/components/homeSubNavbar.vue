@@ -1,9 +1,9 @@
 <template>
     <div class="homeSubNavbar">
-        <div class="mui-scroll-wrapper mui-slider-indicator mui-segmented-control mui-segmented-control-inverted">
+        <div id="homeSubNavbar" class="mui-scroll-wrapper mui-slider-indicator mui-segmented-control mui-segmented-control-inverted">
             <div class="mui-scroll itemlist">
-                <a v-for="item in  itemList" :class="{'selected':currentVal==item.id}" :key="item.id" @click="_clickItem(item.id)">
-                    {{item.name}}
+                <a v-for="item in  itemList" :class="{'selected':currentVal==item.name}" :key="item.name" @click="_clickItem(item.name)">
+                    {{item.label}}
                 </a>
             </div>
         </div>
@@ -12,7 +12,7 @@
 </template>
 
 <script>
-	import routes from '../pages/index-content/routeConfig'
+    import routes from '../pages/index-content/routeConfig'
     export default {
         name: 'homeSubNavbar',
         props: {
@@ -27,10 +27,10 @@
             }
         },
         created() {
-            this.currentVal = this.val
+            this.currentVal = this.value
         },
         mounted() {
-            mui('.mui-scroll-wrapper').scroll({
+            mui('#homeSubNavbar').scroll({
                 scrollY: false, //是否竖向滚动
                 scrollX: true, //是否横向滚动
                 startX: 0, //初始化时滚动至x
@@ -40,9 +40,9 @@
             });
         },
         methods: {
-            _clickItem(id) {
-                this.currentVal = id
-                this.$emit('input', id)
+            _clickItem(name) {
+                this.currentVal = name
+                this.$emit('input', name)
             }
         },
         watch: {
@@ -61,9 +61,15 @@
     }
 
     .mui-scroll-wrapper {
+		position: absolute;
         padding-left: 15px;
+        width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
     }
-
+    .mui-scroll{
+		position: absolute;
+	}
     .itemlist {
         white-space: nowrap;
         a {

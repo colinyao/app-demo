@@ -1,26 +1,26 @@
 const routes = [{
-    name: '推荐',
-    id: 'recommend'
+    label: '推荐',
+    name: 'recommend'
 }, {
-    name: '附近',
-    id: 'nearby'
+    label: '附近',
+    name: 'nearby'
 }, {
-    name: '榜单',
-    id: 'rank'
+    label: '榜单',
+    name: 'rank'
 }, {
-    name: '明星',
-    id: 'star'
+    label: '明星',
+    name: 'star'
 }, {
-    name: '搞笑',
-    id: 'funny'
+    label: '搞笑',
+    name: 'funny'
 }, {
-    name: '情感',
-    id: 'emotion'
+    label: '情感',
+    name: 'emotion'
 }, {
-    name: '社会',
-    id: 'social'
+    label: '社会',
+    name: 'social'
 }, {
-    name: '电影',
-    id: 'movie'
+    label: '电影',
+    name: 'movie'
 }]
 export default routes

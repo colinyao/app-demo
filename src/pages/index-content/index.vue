@@ -2,7 +2,7 @@
     <div class="wrapper">
 		<homeSubNavbar class="subBar" v-model="activeSubItem"></homeSubNavbar>
         <keep-alive>
-			<router-view :key="activeSubItem" :id="activeSubItem"></router-view>
+			<router-view></router-view>
 		</keep-alive>
     </div>
 </template>

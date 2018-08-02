@@ -11,61 +11,73 @@
     </div>
 </template>
 <script>
+	import store from './store'
+	import axios from 'axios'
     export default {
-		props:{
-		   id:[String,Number]	
-		},
         data() {
             return {
-                itemList: [1, 2, 3, 4, 5, 6, 7, 8, 9, ]
+                itemList: []
             }
         },
+		computed:{
+		   pageId(){
+			   return this.$route.name
+		   }	
+		},
         mounted() {
-			
-            if (this.$route.path === '/recommend') {
-                mui.init({
-                    pullRefresh: {
-                        container: "#refreshContainer", //下拉刷新容器标识，querySelector能定位的css选择器均可，比如：id、.class等
-                        up: {
-                            contentrefresh: "正在加载...", //可选，正在加载状态时，上拉加载控件上显示的标题内容
-                            contentnomore: '没有更多数据了', //可选，请求完毕若没有更多数据时显示的提醒内容；
-                            callback: this._pullup //必选，刷新函数，根据具体业务来编写，比如通过ajax从服务器获取新数据；
-                        },
-                        down: {
-                            style: 'circle', //必选，下拉刷新样式，目前支持原生5+ ‘circle’ 样式
-                            callback: this._pulldown //必选，刷新函数，根据具体业务来编写，比如通过ajax从服务器获取新数据；
-                        }
-
+            mui.init({
+                pullRefresh: {
+                    container: "#refreshContainer", //下拉刷新容器标识，querySelector能定位的css选择器均可，比如：id、.class等
+                    up: {
+                        contentrefresh: "正在加载...", //可选，正在加载状态时，上拉加载控件上显示的标题内容
+                        contentnomore: '没有更多数据了', //可选，请求完毕若没有更多数据时显示的提醒内容；
+                        callback: this._pullup, //必选，刷新函数，根据具体业务来编写，比如通过ajax从服务器获取新数据；,
+						auto:true
                     },
-                });
-                setTimeout(_ => {
-                    mui('#refreshContainer').pullRefresh().enablePullupToRefresh();
-                }, 200)
-            }
+                    down: {
+                        style: 'circle', //必选，下拉刷新样式，目前支持原生5+ ‘circle’ 样式
+                        callback: this._pulldown //必选，刷新函数，根据具体业务来编写，比如通过ajax从服务器获取新数据；
+                    }
+                }
+            });
+            setTimeout(_ => {
+                mui('#refreshContainer').pullRefresh().enablePullupToRefresh();
+            }, 200)
         },
         methods: {
             _pulldown() {
-                setTimeout(() => {
-                    mui('#refreshContainer').pullRefresh().endPulldownToRefresh();
-                }, 2000)
+				axios.post('/api/list').then(res=>{
+					this.itemList=this.itemList.concat(res.data.data.list)
+					store.commit(`update${this.pageId}`,this.itemList)
+					setTimeout(() => {
+						mui('#refreshContainer').pullRefresh().endPulldownToRefresh()
+					}, 1000)
+				})
             },
             _pullup() {
-                setTimeout(() => {
-                    this.itemList = this.itemList.concat(this.itemList)
-                    mui('#refreshContainer').pullRefresh().endPullupToRefresh()
-                    mui('#refreshContainer').pullRefresh().enablePullupToRefresh();
-                }, 2000)
+			    axios.post('/api/list').then(res=>{
+					this.itemList=this.itemList.concat(res.data.data.list)
+					store.commit(`update${this.pageId}`,this.itemList)
+					setTimeout(() => {
+						mui('#refreshContainer').pullRefresh().endPullupToRefresh()
+						mui('#refreshContainer').pullRefresh().enablePullupToRefresh();
+					}, 1000)
+				})
+			
+                
             }
         },
-		watch:{
-			$route(newVal){
-				console.log(newVal)
-			}
-		}
+        watch: {
+            pageId(newVal) {
+                this.itemList=store.getters[`get${newVal}`]
+				mui('#refreshContainer').pullRefresh().scrollTo(0,0,0)
+				mui('#refreshContainer').pullRefresh().pulldownLoading();
+            }
+        }
     }
 </script>
 <style lang="less" scoped>
     .home-wrapper {
-        margin-top: 40px;
+        top: 40px;
     }
 </style>
