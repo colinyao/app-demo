@@ -49,9 +49,4 @@
         z-index: 99999;
     }
 </style>
-<style>
-	＃index+.mui-iframe-wrapper{
-		overflow-y:hidden;
-	}
-</style>
 

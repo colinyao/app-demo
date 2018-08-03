@@ -6,6 +6,8 @@ import FastClick from 'fastclick'
 import router from './route.js'
 import store from './store'
 import '~a/css/common.less'
+import 'intersection-observer';  //IntersectionObserver polyfill
+IntersectionObserver.prototype.POLL_INTERVAL = 100;
 FastClick.attach(document.body);
 
 Vue.config.productionTip = false

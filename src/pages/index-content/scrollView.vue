@@ -3,9 +3,14 @@
         <div id="refreshContainer" class="mui-content mui-scroll-wrapper home-wrapper">
             <div class="mui-scroll">
                 <!--数据列表-->
-                <ul class="mui-table-view mui-table-view-chevron">
-                    <li v-for="item in itemList">{{item}}</li>
-                </ul>
+                <div class="mui-table-view mui-table-view-chevron">
+					<lazyScroller>
+						<lazyComponent v-for="(item,index) in itemList" :index='index'>
+							<div>{{item}}</div>
+						</lazyComponent>
+					</lazyScroller>
+						
+                </div>
             </div>
         </div>
     </div>
@@ -13,7 +18,13 @@
 <script>
 	import store from './store'
 	import axios from 'axios'
+	import lazyScroller from '../../components/lazyScroller.vue'
+	import lazyComponent from '../../components/lazyComponent.vue'
     export default {
+		components:{ 
+			lazyScroller,
+	     	lazyComponent	
+		},
         data() {
             return {
                 itemList: []
