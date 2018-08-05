@@ -3,19 +3,29 @@
         <div id="refreshContainer" class="mui-content mui-scroll-wrapper home-wrapper">
             <div class="mui-scroll">
                 <!--数据列表-->
-                <ul class="mui-table-view mui-table-view-chevron">
-                    <li v-for="item in itemList" :key="item.mblog.id">
-						<div class="list-item">
-							  <div class="item-header">
-								    <div class="head-img"><img :src="item.mblog.user.profile_image_url" alt=""></div>
-									<div class="user-info">
-										<p class="userName"><span>{{item.mblog.user.screen_name}}</span><i class="badge"></i></p>
-										<p class="other-info"><span>{{item.mblog.user.created_at}}</span> <span>{{item.mblog.source}}</span></p>
-									</div>
-							  </div>
-						</div>
-					</li>
-                </ul>
+                <div class="mui-table-view mui-table-view-chevron">
+                    <lazyScroller>
+                        <lazyComponent v-for="(item,index) in itemList" :index='index'>
+                            <div class="list-item">
+                                <div class="item-header">
+                                    <div class="head-img">
+                                        <img :src="item.mblog.user.profile_image_url" alt="">
+                                    </div>
+                                    <div class="user-info">
+                                        <p class="userName">
+                                            <span>{{item.mblog.user.screen_name}}</span>
+                                            <i class="badge"></i>
+                                        </p>
+                                        <p class="other-info">
+                                            <span>{{item.mblog.user.created_at}}</span>
+                                            <span>{{item.mblog.source}}</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </lazyComponent>
+                    </lazyScroller>
+                </div>
             </div>
         </div>
     </div>
@@ -23,7 +33,13 @@
 <script>
     import store from './store'
     import axios from 'axios'
+    import lazyScroller from '../../components/lazyScroller.vue'
+    import lazyComponent from '../../components/lazyComponent.vue'
     export default {
+        components: {
+            lazyScroller,
+            lazyComponent
+        },
         data() {
             return {
                 itemList: []
@@ -90,14 +106,15 @@
     .home-wrapper {
         top: 40px;
     }
-	.head-img{
-		width:2rem;
-		height:2rem;
-		& img{
-			display: block;
-			width:100%;
-			height:100%;
-			border-radius:100%;
-		}
-	}
+
+    .head-img {
+        width: 2rem;
+        height: 2rem;
+        & img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            border-radius: 100%;
+        }
+    }
 </style>
