@@ -39,6 +39,7 @@
                 </div>
             </div>
         </div>
+		<previwer ref='previwer'></previwer>
     </div>
 </template>
 <script>
@@ -46,12 +47,14 @@
     import axios from 'axios'
     import lazyScroller from '~c/lazyScroller.vue'
     import lazyComponent from '~c/lazyComponent.vue'
+	import previwer from '~c/previwer.vue'
 	import attentionBtn from '~c/buttons/attention.vue'
     export default {
         components: {
             lazyScroller,
             lazyComponent,
-			attentionBtn
+			attentionBtn,
+			previwer
         },
         data() {
             return {
@@ -82,6 +85,7 @@
             setTimeout(_ => {
                 mui('#refreshContainer').pullRefresh().enablePullupToRefresh();
             }, 200)
+			this.$refs.previwer.show(0)
         },
         methods: {
             _pulldown() {
