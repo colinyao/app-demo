@@ -14,18 +14,17 @@
 		},
         data() {
             return {
-				activeSubItem:''
+				activeSubItem:'recommend'
             }
         },
         mounted() {
-
+        
         },
         methods: {
          
         },
 		watch:{
 			activeSubItem(newVal){
-
 				this.$router.push({path:'/'+newVal})
 			}
 		}

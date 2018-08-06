@@ -5,9 +5,9 @@
                 <!--数据列表-->
                 <div class="mui-table-view mui-table-view-chevron">
                     <lazyScroller>
-                        <lazyComponent v-for="(item,index) in itemList" :index='index'>
+                        <lazyComponent v-for="(item,index) in itemList" :ind='index' :key="item.mblog.id">
                             <div class="list-item">
-                                <div class="item-header">
+                                <div class="item-head">
                                     <div class="head-img">
                                         <img :src="item.mblog.user.profile_image_url" alt="">
                                     </div>
@@ -17,11 +17,22 @@
                                             <i class="badge"></i>
                                         </p>
                                         <p class="other-info">
-                                            <span>{{item.mblog.user.created_at}}</span>
+                                            <span>{{item.mblog.created_at}}</span>
                                             <span>{{item.mblog.source}}</span>
                                         </p>
                                     </div>
+									<div class="operates">
+										<attentionBtn  @click="_clickAttentionBtn(item.mblog.user)" :status="item.mblog.user.follow_me?(item.mblog.user.follow_me===2?2:1):0"></attentionBtn>
+									</div>
                                 </div>
+								<div class="item-content">
+									<p class="description" v-html="item.mblog.text">
+										
+									</p>
+									<div class="imgs">
+										
+									</div>
+								</div>
                             </div>
                         </lazyComponent>
                     </lazyScroller>
@@ -33,12 +44,14 @@
 <script>
     import store from './store'
     import axios from 'axios'
-    import lazyScroller from '../../components/lazyScroller.vue'
-    import lazyComponent from '../../components/lazyComponent.vue'
+    import lazyScroller from '~c/lazyScroller.vue'
+    import lazyComponent from '~c/lazyComponent.vue'
+	import attentionBtn from '~c/buttons/attention.vue'
     export default {
         components: {
             lazyScroller,
-            lazyComponent
+            lazyComponent,
+			attentionBtn
         },
         data() {
             return {
@@ -91,7 +104,18 @@
                 })
 
 
-            }
+            },
+			_clickAttentionBtn(opts){
+				if(opts.follow_me===false){
+					opts.follow_me=2
+					setTimeout(()=>{axios.post('/api/attention').then(res=>{
+						if(res.data.code=='200'){
+							opts.follow_me=1
+						}
+					})},1000)
+				}
+				
+			}
         },
         watch: {
             pageId(newVal) {
@@ -103,13 +127,25 @@
     }
 </script>
 <style lang="less" scoped>
+	@import '../../assets/css/variables.less';
     .home-wrapper {
         top: 40px;
     }
-
+	.mui-table-view{
+		background:transparent
+	}
+    .list-item{
+		background:#fff;
+		.mt10;
+		.pd10;
+	}
+	.item-head{
+		display: flex;
+	}
     .head-img {
         width: 2rem;
         height: 2rem;
+		margin-right:10px;
         & img {
             display: block;
             width: 100%;
@@ -117,4 +153,19 @@
             border-radius: 100%;
         }
     }
+	.user-info{
+		flex:1;
+		.userName{
+			color:@c2;
+			.fs(@f14);
+		}
+		.other-info{
+			span{
+				.fs(@f12);
+			}
+		}
+	}
+	.description{
+		.fs(@f14);
+	}
 </style>

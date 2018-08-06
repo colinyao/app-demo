@@ -9,8 +9,8 @@ Mock.mock('/api/list', (req, res) => {
             'list|20': [{
                 "card_type": 9,
                 "mblog": {
-                    "created_at": "07-30",
-                    "id":Mock.Random.natural(10, 1000000),
+                    "created_at": () => Mock.Random.date('MM-dd'),
+                    "id": () => Mock.Random.natural(10, 1000000),
                     "idstr": "4267394501772245",
                     "mid": "4267394501772245",
                     "can_edit": false,
@@ -24,17 +24,17 @@ Mock.mock('/api/list', (req, res) => {
                     "is_paid": false,
                     "mblog_vip_type": 0,
                     "user": {
-                        "id": Mock.Random.natural(10, 1000000),
-                        "screen_name": Mock.Random.cname(),
+                        "id": () => Mock.Random.natural(10, 1000000000),
+                        "screen_name": () => Mock.Random.cname(),
                         "profile_image_url": "https://tva3.sinaimg.cn/crop.0.2.398.398.180/af37aff2gw1edubjhxzslj20b40bp0ts.jpg",
                         "profile_url": "https:\/\/m.weibo.cn\/u\/5836562753?uid=5836562753&luicode=10000011&lfid=102803_ctg1_1988_-_ctg1_1988",
-                        "statuses_count": Mock.Random.natural(10, 10000),
+                        "statuses_count": () => Mock.Random.natural(10, 10000),
                         "verified": true,
                         "verified_type": 0,
                         "verified_type_ext": 1,
-                        "verified_reason": Mock.Random.paragraph(10, 20),
+                        "verified_reason": () => Mock.Random.paragraph(10, 20),
                         "close_blue_v": false,
-                        "description": Mock.Random.paragraph(10, 20),
+                        "description": () => Mock.Random.paragraph(10, 20),
                         "gender": "m",
                         "mbtype": 12,
                         "urank": 33,
@@ -209,5 +209,12 @@ Mock.mock('/api/list', (req, res) => {
                 }
             }]
         })
+    }
+})
+Mock.mock('/api/attention', (req, res) => {
+    return {
+        code: '200',
+        msg: 'ok',
+        data: ''
     }
 })

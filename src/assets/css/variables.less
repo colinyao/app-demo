@@ -8,11 +8,39 @@
 @c7: #efeff4;  //背景用色
 @cd: #333; //默认文字颜色
 /*fontSize*/  
-@f12: "12px"; //提示文字字体大小
-@f14: "14px"; //主要文字字体大小，如table，表单label
-@f16: "16px"; //标题字体大小
-@f18: "18px"; //主要标题字体大小
+@f10: 10; //提示文字字体大小
+@f12: 12; //提示文字字体大小
+@f14: 14; //主要文字字体大小，如table，表单label
+@f16: 16; //标题字体大小
+@f18: 18; //主要标题字体大小
+.fs(@fs){
+	font-size:@fs/16rem;
+}
 
+.c1(){
+	color:@c1;
+}
+.c2(){
+	color:@c2;
+}
+.c3(){
+	color:@c3;
+}
+.c4(){
+	color:@c4;
+}
+.c5(){
+	color:@c5;
+}
+.c6(){
+	color:@c6;
+}
+.c7(){
+	color:@c7;
+}
+.c8(){
+	color:@c8;
+}
 /*边距*/
 .mt10 () {
   margin-top: 10px;
@@ -64,6 +92,9 @@
 }
 
 /* padding */
+.pd10 () {
+  padding: 10px;
+}
 .pd20 () {
   padding: 20px;
 }
@@ -185,4 +216,12 @@
 }
 .fixed(){
 	position: fixed;
+}
+.animate-circle(){
+	 animation: circle 1s 0s linear infinite;
+	 transform-origin: center center;
+}
+@keyframes circle{
+	 0%{transform:rotateZ(0)}
+	 100%{transform:rotateZ(360deg)}
 }
