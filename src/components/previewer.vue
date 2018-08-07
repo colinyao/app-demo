@@ -106,6 +106,7 @@
             },
             doInit(index) {
                 const self = this
+				console.log(this.options)
                 let options = Object.assign({
                     history: false,
                     shareEl: false,
