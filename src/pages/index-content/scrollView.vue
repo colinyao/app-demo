@@ -30,7 +30,7 @@
                                     <div class="imgs">
                                         <div class="my-gallery" data-pswp-uid="1" itemscope itemtype="http://schema.org/ImageGallery">
 
-                                           <img class="previewer-demo-img" v-for="(item, index) in list" :src="item.src" width="100" @click="show(index)">
+                                            <img class="previewer-demo-img" v-for="(item, index) in list" :src="item.src" width="100" @click="show(index)">
 
 
                                         </div>
@@ -104,6 +104,11 @@
                 return this.$route.name
             }
         },
+        created() {
+            // H5 plus事件处理
+
+
+        },
         mounted() {
             mui.init({
                 pullRefresh: {
@@ -124,10 +129,6 @@
                 mui('#refreshContainer').pullRefresh().enablePullupToRefresh();
             }, 200)
             //this.$refs.previwer.show(0)
-
-
-
-
         },
         methods: {
             _pulldown() {
@@ -164,10 +165,16 @@
                 }
 
             },
-			show(index){
-				this.$refs.previewer.show(index)
-				console.log(this.$refs.previewer)
-			}
+            show(index) {
+// 				if(window.plus){
+// 					ws = plus.webview.currentWebview();
+// 					ws.setStyle({
+// 						top: '0px'
+// 					});
+// 				}
+				
+                this.$refs.previewer.show(index)
+            }
         },
         watch: {
             pageId(newVal) {
