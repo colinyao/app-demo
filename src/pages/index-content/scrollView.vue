@@ -5,7 +5,7 @@
                 <!--数据列表-->
                 <div class="mui-table-view mui-table-view-chevron">
                     <lazyScroller>
-                        <lazyComponent v-for="(item,index) in itemList" :ind='index' :key="item.mblog.id">
+                        <lazyComponent class="mt10" v-for="(item,index) in itemList" :ind='index' :key="item.mblog.id">
                             <div class="list-item">
                                 <div class="item-head">
                                     <div class="head-img">
@@ -21,25 +21,28 @@
                                             <span>{{item.mblog.source}}</span>
                                         </p>
                                     </div>
-									<div class="operates">
-										<attentionBtn  @click="_clickAttentionBtn(item.mblog.user)" :status="item.mblog.user.follow_me?(item.mblog.user.follow_me===2?2:1):0"></attentionBtn>
-									</div>
+                                    <div class="operates">
+                                        <attentionBtn @click="_clickAttentionBtn(item.mblog.user)" :status="item.mblog.user.follow_me?(item.mblog.user.follow_me===2?2:1):0"></attentionBtn>
+                                    </div>
                                 </div>
-								<div class="item-content">
-									<p class="description" v-html="item.mblog.text">
-										
-									</p>
-									<div class="imgs">
-										
-									</div>
-								</div>
+                                <div class="item-content">
+                                    <p class="description" v-html="item.mblog.text"></p>
+                                    <div class="imgs">
+                                        <div class="my-gallery" data-pswp-uid="1" itemscope itemtype="http://schema.org/ImageGallery">
+
+                                           <img class="previewer-demo-img" v-for="(item, index) in list" :src="item.src" width="100" @click="show(index)">
+
+
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </lazyComponent>
                     </lazyScroller>
                 </div>
             </div>
         </div>
-		<previwer ref='previwer'></previwer>
+        <previewer :list="list" ref="previewer" :options="options"></previewer>
     </div>
 </template>
 <script>
@@ -47,18 +50,53 @@
     import axios from 'axios'
     import lazyScroller from '~c/lazyScroller.vue'
     import lazyComponent from '~c/lazyComponent.vue'
-	import previwer from '~c/previwer.vue'
-	import attentionBtn from '~c/buttons/attention.vue'
+    import previewer from '~c/previewer.vue'
+    import attentionBtn from '~c/buttons/attention.vue'
     export default {
         components: {
             lazyScroller,
             lazyComponent,
-			attentionBtn,
-			previwer
+            attentionBtn,
+            previewer
         },
         data() {
             return {
-                itemList: []
+                itemList: [],
+                list: [{
+                        msrc: 'http://ww1.sinaimg.cn/thumbnail/663d3650gy1fplwu9ze86j20m80b40t2.jpg',
+                        src: 'http://ww1.sinaimg.cn/large/663d3650gy1fplwu9ze86j20m80b40t2.jpg',
+                        w: 800,
+                        h: 400
+                    },
+                    {
+                        msrc: 'http://ww1.sinaimg.cn/thumbnail/663d3650gy1fplwvqwuoaj20xc0p0t9s.jpg',
+                        src: 'http://ww1.sinaimg.cn/large/663d3650gy1fplwvqwuoaj20xc0p0t9s.jpg',
+                        w: 1200,
+                        h: 900
+                    }, {
+                        msrc: 'http://ww1.sinaimg.cn/thumbnail/663d3650gy1fplwwcynw2j20p00b4js9.jpg',
+                        src: 'http://ww1.sinaimg.cn/large/663d3650gy1fplwwcynw2j20p00b4js9.jpg'
+                    }
+                ],
+                options: {
+                    getThumbBoundsFn(index) {
+                        // find thumbnail element
+                        let thumbnail = document.querySelectorAll('.previewer-demo-img')[index]
+                        // get window scroll Y
+                        let pageYScroll = window.pageYOffset || document.documentElement.scrollTop
+                        // optionally get horizontal scroll
+                        // get position of element relative to viewport
+                        let rect = thumbnail.getBoundingClientRect()
+                        // w = width
+                        return {
+                            x: rect.left,
+                            y: rect.top + pageYScroll,
+                            w: rect.width
+                        }
+                        // Good guide on how to get element coordinates:
+                        // http://javascript.info/tutorial/coordinates
+                    }
+                }
             }
         },
         computed: {
@@ -85,7 +123,11 @@
             setTimeout(_ => {
                 mui('#refreshContainer').pullRefresh().enablePullupToRefresh();
             }, 200)
-			this.$refs.previwer.show(0)
+            //this.$refs.previwer.show(0)
+
+
+
+
         },
         methods: {
             _pulldown() {
@@ -109,16 +151,22 @@
 
 
             },
-			_clickAttentionBtn(opts){
-				if(opts.follow_me===false){
-					opts.follow_me=2
-					setTimeout(()=>{axios.post('/api/attention').then(res=>{
-						if(res.data.code=='200'){
-							opts.follow_me=1
-						}
-					})},1000)
-				}
-				
+            _clickAttentionBtn(opts) {
+                if (opts.follow_me === false) {
+                    opts.follow_me = 2
+                    setTimeout(() => {
+                        axios.post('/api/attention').then(res => {
+                            if (res.data.code == '200') {
+                                opts.follow_me = 1
+                            }
+                        })
+                    }, 1000)
+                }
+
+            },
+			show(index){
+				this.$refs.previewer.show(index)
+				console.log(this.$refs.previewer)
 			}
         },
         watch: {
@@ -131,25 +179,25 @@
     }
 </script>
 <style lang="less" scoped>
-	@import '../../assets/css/variables.less';
-    .home-wrapper {
-        top: 40px;
+    @import '../../assets/css/variables.less';
+    .mui-table-view {
+        background: transparent;
+        margin-top: 40px;
     }
-	.mui-table-view{
-		background:transparent
-	}
-    .list-item{
-		background:#fff;
-		.mt10;
-		.pd10;
-	}
-	.item-head{
-		display: flex;
-	}
+
+    .list-item {
+        background: #fff;
+        .pd10;
+    }
+
+    .item-head {
+        display: flex;
+    }
+
     .head-img {
         width: 2rem;
         height: 2rem;
-		margin-right:10px;
+        margin-right: 10px;
         & img {
             display: block;
             width: 100%;
@@ -157,19 +205,25 @@
             border-radius: 100%;
         }
     }
-	.user-info{
-		flex:1;
-		.userName{
-			color:@c2;
-			.fs(@f14);
-		}
-		.other-info{
-			span{
-				.fs(@f12);
-			}
-		}
-	}
-	.description{
-		.fs(@f14);
-	}
+
+    .user-info {
+        flex: 1;
+        .userName {
+            color: @c2;
+            .fs(@f14);
+        }
+        .other-info {
+            span {
+                .fs(@f12);
+            }
+        }
+    }
+
+    .description {
+        .fs(@f14);
+    }
+
+    /deep/ .mui-pull-top-pocket {
+        top: 40px;
+    }
 </style>

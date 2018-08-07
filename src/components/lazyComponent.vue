@@ -8,6 +8,7 @@
     </figure>
 </template>
 <script>
+	import utils from '../assets/js/utils.js'
     export default {
         props: {
             ind: [Number]
@@ -37,7 +38,9 @@
             status(newVal) {
                 this.$nextTick(() => {
                     if (newVal && !this.cacluateStatus) {
-                        this.height = this.$refs.component.offsetHeight;
+			
+						let styles=utils.getStyle(this.$refs.component,['height','margin-top','margin-bottom'])
+                        this.height = styles['height']+styles['margin-top']+styles['margin-bottom'];
 						this.cacluateStatus=true;
                     }
                 })
@@ -48,10 +51,6 @@
 <style lang="less" scoped>
     .lazy-component {
         background: #fff;
-    }
-
-    figure {
-        margin: 0;
     }
 
     .fade-enter-active,

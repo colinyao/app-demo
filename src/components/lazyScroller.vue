@@ -40,7 +40,5 @@
     }
 </script>
 <style lang="less" scoped>
-    figure {
-        margin: 0;
-    }
+
 </style>

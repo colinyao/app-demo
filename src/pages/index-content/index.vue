@@ -2,7 +2,7 @@
     <div class="wrapper">
 		<homeSubNavbar class="subBar" v-model="activeSubItem"></homeSubNavbar>
         <keep-alive>
-			<router-view :key="activeSubItem" :id="activeSubItem"></router-view>
+			<router-view></router-view>
 		</keep-alive>
     </div>
 </template>
@@ -14,31 +14,23 @@
 		},
         data() {
             return {
-				activeSubItem:''
+				activeSubItem:'recommend'
             }
         },
         mounted() {
-
+        
         },
         methods: {
          
         },
 		watch:{
 			activeSubItem(newVal){
-
 				this.$router.push({path:'/'+newVal})
 			}
 		}
     }
 </script>
 <style lang="less" scoped>
-	.wrapper{
-		position: absolute;
-		top:0;
-		bottom:0;
-		left:0;
-		right:0;
-	}
 	.subBar {
 		position: absolute;
 		top: 0;

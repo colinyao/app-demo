@@ -14,7 +14,19 @@ const utils = {
                     fn.apply(context, args);
                 }, delay);
             }
-        }
+        },
+		getStyle:(ele,opts)=>{
+			let styles={}
+			let styleColection=window.getComputedStyle(ele);
+			if(typeof opts==='object'){
+				opts.forEach((key)=>{
+					styles[key]=styleColection[key]?+styleColection[key].replace('px',''):''
+				})
+				return styles;
+			}else{
+				return styleColection[opts]?+styleColection[opts].replace('px',''):''
+			}
+		}
 }
 
 export default utils

@@ -58,10 +58,11 @@
     @import '../assets/css/variables.less';
     .homeSubNavbar {
         background: #fff;
+		position:fixed;
     }
 
     .mui-scroll-wrapper {
-		position: absolute;
+		position: fixed;
         padding-left: 15px;
         width: 100%;
         box-sizing: border-box;
