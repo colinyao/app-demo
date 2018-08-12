@@ -101,7 +101,7 @@
                             let sourceWidth = ele.offsetWidth;
                             let sourceHeight = ele.offsetHeight;
 		                    
-                            if(ele!==target&&!((targetTop>(sourceTop+1/3*sourceHeight))||((targetTop+targetHeight)<(sourceTop+2/3*sourceHeight))||(targetLeft>(sourceLeft+1/3*sourceWidth))||((targetLeft+targetWidth)<(sourceLeft+2/3*sourceWidth)))){
+                            if(ele!==target&&!((targetTop>(sourceTop+1/2*sourceHeight))||((targetTop+targetHeight)<(sourceTop+1/2*sourceHeight))||(targetLeft>(sourceLeft+1/2*sourceWidth))||((targetLeft+targetWidth)<(sourceLeft+1/2*sourceWidth)))){
 								console.log(sourceLeft)
 							
 							}
