@@ -17,7 +17,7 @@
                 <div class="btn-edit" @click="editStatus=true">编辑</div>
             </div>
             <ul class="item-list item-added" v-drapEvent>
-                <li :class="{'selected':currentVal==item.name}" v-for="(item,index) in  activeItemList" :key="item.name" @click="_clickAddedItem(item.name)">
+                <li :class="{'default':index===0,'selected':currentVal==item.name}" v-for="(item,index) in  activeItemList" :key="item.name" @click="_clickAddedItem(item.name)">
                     <div @contextmenu.prevent class="drag-container">
                         <div class="drag-content">
                             <i class="close-btn mui-icon mui-icon-close" v-show="editStatus&&item.name!==recommend" @click.stop="_deleteAddOne(index)"></i>
@@ -53,44 +53,67 @@
         directives: {
             drapEvent: {
                 bind: (el, binding, vnode) => {
-                    let childs = el.children;
-                    let x, y, _x, _y, disX, disY;
+                    let childs = el.children,
+					    vm=vnode.context,
+						flag=true;
+                    let x, y, _x, _y, disX, disY,_disX,_disY;
                     el.ontouchstart = (e) => {
                         e.stopPropagation()
-                        let target = e.target;
+                        let target = e.target,parent=e.target.parentNode,reg=/translate3d\(([0-9.]{1,})\w+,\s+([0-9.]{1,})\w+,\s+0\w+\)/;
                         if (!!~target.className.indexOf('drag-content')) {
                             let touch = e.touches[0];
                             target.style.zIndex = '9999'
                             x = touch.clientX;
                             y = touch.clientY;
+							let trans=reg.exec(parent.style.webkitTransform)||[]
+							if(trans.length){
+								_disX=+trans[1]
+								_disY=+trans[2]
+								
+							}else{
+								_disX=0;
+								_disY=0;
+							}
                             target.className = target.className ? target.className + ' touched' : 'touched';
                         }
                     }
                     el.ontouchmove = (e) => {
-
                         let touch = e.changedTouches[0];
                         let target = e.target.parentNode;
                         _x = touch.clientX;
                         _y = touch.clientY;
                         disX = _x - x;
                         disY = _y - y;
+                    
                         target.style.webkitTransform = target.style.webkitTransform.replace(
-                            /translate3d\([\s\S]*\)/, '') + ' translate3d(' + disX + 'px,' + disY + 'px,0)';
-                        checkCrash(target, e.currentTarget.children)
+                            /translate3d\([\s\S]*\)/, '') + ' translate3d(' + (disX+_disX) + 'px,' +(disY+_disY) + 'px,0)';
+						let targetIndex=getIndex(target, e.currentTarget.children);
+                        checkCrash(target, e.currentTarget.children,targetIndex)
                     }
                     el.ontouchend = (e) => {
                         e.stopPropagation()
                         let touch = e.touches[0];
                         let target = e.target;
-                        disX = 0;
-                        disY = 0;
+          
                         target.className = target.className.replace(/\s?touched/, '');
                     }
+                    function getIndex(target,source){
+						for(let i=0,len=source.length;i<len;i++){
+							if(source[i].children[0]===target){return i;}
+						}
+					}
+					function switchPos(pos1,pos2,target){
+	
+						[vm.activeItemList[pos1],vm.activeItemList[pos2]]=[vm.activeItemList[pos2],vm.activeItemList[pos1]]
+						 vm.$forceUpdate()
+						 target.style.webkitTransform = target.style.webkitTransform.replace(
+						 	/translate3d\([\s\S]*\)/, '') + ' translate3d(' + disX+_disX + 'px,' + disY+_disY + 'px,0)';
+						 
+					}
+                    function checkCrash(target, source,targetIndex) {
 
-                    function checkCrash(target, source) {
- 
-                        var targetTop = target.offsetTop + disY;
-                        var targetLeft = target.offsetLeft + disX;
+                        var targetTop = target.offsetTop + disY+_disY;
+                        var targetLeft = target.offsetLeft + disX+_disX;
                         var targetWidth = target.offsetWidth;
                         var targetHeight = target.offsetHeight;
 
@@ -100,10 +123,18 @@
                             let sourceLeft = ele.offsetLeft;
                             let sourceWidth = ele.offsetWidth;
                             let sourceHeight = ele.offsetHeight;
-		                    
-                            if(ele!==target&&!((targetTop>(sourceTop+1/2*sourceHeight))||((targetTop+targetHeight)<(sourceTop+1/2*sourceHeight))||(targetLeft>(sourceLeft+1/2*sourceWidth))||((targetLeft+targetWidth)<(sourceLeft+1/2*sourceWidth)))){
-								console.log(sourceLeft)
-							
+                            if(ele!==target&&!((targetTop>(sourceTop+1/3*sourceHeight))||((targetTop+targetHeight)<(sourceTop+2/3*sourceHeight))||(targetLeft>(sourceLeft+1/3*sourceWidth))||((targetLeft+targetWidth)<(sourceLeft+2/3*sourceWidth)))){
+								if(flag){
+						 x=x+sourceLeft-target.offsetLeft
+						 y=y+sourceTop-target.offsetTop
+						
+						 console.log(y)
+						 console.log(_x)
+						 console.log(_y)
+						 disX=_x-x
+						 disY=_y-y
+									switchPos(targetIndex,i,target)
+								}
 							}
                         }
 
@@ -233,7 +264,9 @@
     .selected {
         color: @c2
     }
-
+    .default{
+		opacity:0.75
+	}
     .shadow {
         position: absolute;
         height: 39px;
