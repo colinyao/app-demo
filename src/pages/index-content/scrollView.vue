@@ -96,7 +96,6 @@
 							break;
 						}
 					}
-
 					// get window scroll Y
 					let pageYScroll = window.pageYOffset || document.documentElement.scrollTop
 					// optionally get horizontal scroll
@@ -119,7 +118,6 @@
 			mui.plusReady(()=>{	
 				 this.ws = plus.webview.currentWebview();
 			});
-
         },
         mounted() {
             mui.init({
@@ -168,8 +166,6 @@
                         mui('#refreshContainer').pullRefresh().enablePullupToRefresh();
                     }, 1000)
                 })
-
-
             },
             _clickAttentionBtn(opts) {
                 if (opts.follow_me === false) {
@@ -182,7 +178,6 @@
                         })
                     }, 1000)
                 }
-
             },
             show(index,id) {
 				if(this.ws){
@@ -209,16 +204,13 @@
         background: transparent;
         margin-top: 40px;
     }
-
     .list-item {
         background: #fff;
         .pd10;
     }
-
     .item-head {
         display: flex;
     }
-
     .head-img {
         width: 2rem;
         height: 2rem;
@@ -230,7 +222,6 @@
             border-radius: 100%;
         }
     }
-
     .user-info {
         flex: 1;
         .userName {
@@ -243,11 +234,9 @@
             }
         }
     }
-
     .description {
         .fs(@f14);
     }
-
     /deep/ .mui-pull-top-pocket {
         top: 40px;
     }
