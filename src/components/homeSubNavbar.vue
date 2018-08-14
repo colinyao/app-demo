@@ -20,10 +20,10 @@
 
             <transition-group name="flip-list" tag="ul" class="item-list item-added" v-drapEvent>
                 <li :class="{'default':index===0,'selected':currentVal==item.name}" v-for="(item,index) in  activeItemList" :key="item.name"
-                    @click="_clickAddedItem(item.name)">
+                    @click="_clickAddedItem($event,item.name)">
                     <div @contextmenu.prevent class="drag-container">
                         <div class="drag-content">
-                            <i class="close-btn mui-icon mui-icon-close" v-show="editStatus&&item.name!==recommend" @click.stop="_deleteAddOne(index)"></i>
+                            <i class="close-btn mui-icon mui-icon-close" v-show="editStatus&&item.name!==recommend" @click.stop="_deleteAddOne($event,index)"></i>
                             {{item.label}}
                         </div>
                     </div>
@@ -33,7 +33,7 @@
                 <p class="title">点击增加分类</p>
             </div>
             <transition-group name="flip-list" tag="ul" class="item-list item-waitAdd">
-                <li v-for="(item,index) of waitItemList" :key="item.name" @click="_clickWaitItem(index)">
+                <li v-for="(item,index) of waitItemList" :key="item.name" @click="_clickWaitItem($event,index)">
                     <span>{{item.label}}</span>
                 </li>
             </transition-group>
@@ -45,7 +45,7 @@
     import {
         routesHash
     } from '../pages/index-content/routeConfig'
-
+    import utils from '../assets/js/utils.js'
     export default {
         name: 'homeSubNavbar',
         props: {
@@ -85,6 +85,7 @@
                             parent.className = parent.className.replace(/\s?transition/, '');
                         }
                     }
+					let checkCarshFun=utils.debounce(checkCrash,20)
                     el.ontouchmove = (e) => {
                         let touch = e.changedTouches[0];
                         let target = e.target.parentNode;
@@ -96,8 +97,8 @@
                         target.style.webkitTransform = target.style.webkitTransform.replace(
                             /translate3d\([\s\S]*\)/, '') + ' translate3d(' + (disX + _disX) + 'px,' + (
                             disY + _disY) + 'px,0)';
-                        let targetIndex = getIndex(target, e.currentTarget.children);
-                        checkCrash(target, e.currentTarget.children, targetIndex)
+                        let targetIndex = getIndex(target, e.currentTarget.children);					
+                        checkCarshFun(target, e.currentTarget.children, targetIndex)
                     }
                     el.ontouchend = (e) => {
                         e.stopPropagation()
@@ -144,41 +145,32 @@
                         })
                     }
 
-                    function changeItem(targetIndex) {
+                    function changeItem(targetIndex,targetLeft,targetTop) {
                         vm.waitItemList.push(vm.activeItemList.splice(targetIndex, 1)[0])
-                        vm.$nextTick(() => {
-                            setTimeout(() => {
-                                flag = true
-                            }, 200)
-
-                        })
+					
+						vm.$nextTick(()=>{
+							let dom=document.getElementsByClassName('flip-list-enter')[0]
+							let _offset=utils.offset(dom)
+							let x=targetLeft-_offset.left
+							let y=targetTop-_offset.top
+							document.getElementsByClassName('flip-list-leave-active')[0].className=''
+							dom.style.webkitTransform='translate3d('+x+'px,'+y+'px,0)'
+							setTimeout(function(){                    
+								dom.style.webkitTransform='translate3d(0px,0px,0)'
+							},50)
+							setTimeout(() => {
+								flag = true
+							}, 500)
+						})
+              
                     }
 
-                    function offset(curEle) {
-                        var totalLeft = null,
-                            totalTop = null,
-                            par = curEle.offsetParent;
-                        //首先加自己本身的左偏移和上偏移
-                        totalLeft += curEle.offsetLeft;
-                        totalTop += curEle.offsetTop
-                        //只要没有找到body，我们就把父级参照物的transition-group边框和偏移也进行累加
-                        while (par) {
-                            //累加父级参照物本身的偏移
-                            totalLeft += par.offsetLeft;
-                            totalTop += par.offsetTop
-                            par = par.offsetParent;
-                        }
 
-                        return {
-                            left: totalLeft,
-                            top: totalTop
-                        }
-                    }
 
 
 
                     function checkCrash(target, source, targetIndex) {
-                        let targetOffset = offset(target)
+                        let targetOffset = utils.offset(target)
                         let targetTop = targetOffset.top + disY + _disY;
                         let targetLeft = targetOffset.left + disX + _disX;
                         itemWidth = itemWidth ? itemWidth : target.offsetWidth;
@@ -186,7 +178,7 @@
                         waitAreaTop = document.getElementsByClassName('item-waitAdd')[0].offsetTop
                         for (let i = 0, len = source.length; i < len; i++) {
                             let ele = source[i].children[0];
-                            let sourceOffset = offset(ele)
+                            let sourceOffset = utils.offset(ele)
                             let sourceTop = sourceOffset.top;
                             let sourceLeft = sourceOffset.left;
 
@@ -208,7 +200,7 @@
                                     20)) {
                                 if (flag) {
                                     flag = false
-                                    changeItem(targetIndex)
+                                    changeItem(targetIndex,targetLeft,targetTop)
                                 }
 
                             }
@@ -256,7 +248,8 @@
                 }, {
                     label: '美女',
                     name: 'beauty'
-                }]
+                }],
+                pos: {}
             }
         },
 
@@ -289,15 +282,29 @@
                 this.currentVal = name
                 this.$emit('input', name)
             },
-            _clickAddedItem(name) {
+            _clickAddedItem(e, name) {
                 this.currentVal = name
                 this.$emit('input', name)
             },
-            _clickWaitItem(index) {
-
+            _clickWaitItem(e, index) {
+                let offset = utils.offset(e.target.parentNode)
+                this.pos = offset;
                 this.activeItemList.push(this.waitItemList.splice(index, 1)[0])
+				this.$nextTick(()=>{
+					let dom=document.getElementsByClassName('flip-list-enter')[0]
+					let _offset=utils.offset(dom)
+					let x=offset.left-_offset.left
+					let y=offset.top-_offset.top
+                    
+					dom.style.webkitTransform='translate3d('+x+'px,'+y+'px,0)'
+					setTimeout(function(){                    
+						dom.style.webkitTransform='translate3d(0px,0px,0)'
+					},50)
+					
+				})
             },
-            _deleteAddOne(index) {
+            _deleteAddOne(e, index) {
+
                 this.waitItemList.push(this.activeItemList.splice(index, 1)[0])
             }
 
@@ -440,8 +447,18 @@
         .flip-list-move {
             transition: all 0.5s;
         }
-        
-		
+//         .flip-list-enter {
+//             /* .list-complete-leave-active for below version 2.1.8 */
+//                 opacity: 0;
+//                 transform: translateY(30px);
+//         }
+		.flip-list-enter-to{
+			transition: all 0.5s;
+		}
+        .flip-list-leave-active {
+            position: absolute;		
+        }
+
         @keyframes bigger {
             0% {
                 transform: scale3d(1, 1, 1);
