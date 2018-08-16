@@ -14,16 +14,16 @@
         <div class="classify">
             <div class="header">
                 <p class="title">我的分类</p>
-                <div class="btn-edit" @click="editStatus=true">编辑</div>
+                <div class="btn-edit" @click="editStatus=!editStatus">编辑</div>
             </div>
 
 
-            <transition-group name="flip-list" tag="ul" class="item-list item-added" v-drapEvent>
-                <li :class="{'default':index===0,'selected':currentVal==item.name}" v-for="(item,index) in  activeItemList" :key="item.name"
-                    @click="_clickAddedItem($event,item.name)">
+            <transition-group name="list-add" tag="ul" class="item-list item-added" v-drapEvent>
+                <li class="item" :class="{'default':index===0,'selected':currentVal==item.name}" v-for="(item,index) in  activeItemList"
+                    :key="item.name" @click="_clickAddedItem($event,item.name)">
                     <div @contextmenu.prevent class="drag-container">
-                        <div class="drag-content">
-                            <i class="close-btn mui-icon mui-icon-close" v-show="editStatus&&item.name!==recommend" @click.stop="_deleteAddOne($event,index)"></i>
+                        <div class="drag-content" :class="{'default':index===0,'selected':currentVal==item.name}">
+                            <i class="close-btn mui-icon mui-icon-close" v-show="editStatus&&item.name!=='recommend'" @click.stop="_deleteAddOne($event,index)"></i>
                             {{item.label}}
                         </div>
                     </div>
@@ -32,8 +32,8 @@
             <div class="header">
                 <p class="title">点击增加分类</p>
             </div>
-            <transition-group name="flip-list" tag="ul" class="item-list item-waitAdd">
-                <li v-for="(item,index) of waitItemList" :key="item.name" @click="_clickWaitItem($event,index)">
+            <transition-group name="list-wait" tag="ul" class="item-list item-waitAdd">
+                <li class="item" v-for="(item,index) of waitItemList" :key="item.name" @click="_clickWaitItem($event,index)">
                     <span>{{item.label}}</span>
                 </li>
             </transition-group>
@@ -57,6 +57,7 @@
             drapEvent: {
                 bind: (el, binding, vnode) => {
                     let vm = vnode.context,
+                        refuse = false,
                         flag = true;
                     let x, y, _x, _y, disX, disY, _disX, _disY;
                     let waitAreaTop = '',
@@ -67,6 +68,12 @@
                         let target = e.target,
                             parent = e.target.parentNode,
                             reg = /translate3d\(([0-9.]{1,})\w+,\s+([0-9.]{1,})\w+,\s+0\w+\)/;
+                        if (!~target.className.indexOf('drag-content') || !!~target.className.indexOf('default')) {
+                            refuse = true;
+                            return;
+                        } else {
+                            refuse = false;
+                        }
                         if (!!~target.className.indexOf('drag-content')) {
                             let touch = e.touches[0];
                             target.style.zIndex = '9999'
@@ -85,8 +92,11 @@
                             parent.className = parent.className.replace(/\s?transition/, '');
                         }
                     }
-					let checkCarshFun=utils.throttle(checkCrash,20)
+                    let checkCarshFun = utils.throttle(checkCrash, 20)
                     el.ontouchmove = (e) => {
+                        if (refuse) {
+                            return;
+                        }
                         let touch = e.changedTouches[0];
                         let target = e.target.parentNode;
                         _x = touch.clientX;
@@ -97,17 +107,20 @@
                         target.style.webkitTransform = target.style.webkitTransform.replace(
                             /translate3d\([\s\S]*\)/, '') + ' translate3d(' + (disX + _disX) + 'px,' + (
                             disY + _disY) + 'px,0)';
-                        let targetIndex = getIndex(target, e.currentTarget.children);					
+                        let targetIndex = getIndex(target, e.currentTarget.children);
                         checkCarshFun(target, e.currentTarget.children, targetIndex)
                     }
                     el.ontouchend = (e) => {
                         e.stopPropagation()
+                        if (refuse) {
+                            return;
+                        }
                         let touch = e.touches[0];
                         let target = e.target;
                         let parent = e.target.parentNode;
                         target.className = target.className.replace(/\s?touched/, '');
                         parent.className = parent.className ? parent.className + ' transition' : 'transition';
-						target.style.zIndex = '1'
+                        target.style.zIndex = '1'
                         parent.style.webkitTransform = parent.style.webkitTransform.replace(
                             /translate3d\([\s\S]*\)/, '') + ' translate3d(0px,0px,0px)';
                     }
@@ -136,39 +149,36 @@
                         vm.$nextTick(() => {
                             //去除transition抖动
                             target.parentNode.className = target.parentNode.className.replace(
-                                /\s?flip-list-move/, '');
+                                /\s?list-add-move/, '');
                             //更新
                             waitAreaTop = document.getElementsByClassName('item-waitAdd')[0].offsetTop
                             //防止交换期间，多次触发碰撞
                             setTimeout(() => {
                                 flag = true
-                            }, 500)
+                            }, 100)
                         })
                     }
 
-                    function changeItem(targetIndex,targetLeft,targetTop) {
+                    function changeItem(targetIndex, targetLeft, targetTop) {
                         vm.waitItemList.push(vm.activeItemList.splice(targetIndex, 1)[0])
-					
-						vm.$nextTick(()=>{
-							let dom=document.getElementsByClassName('flip-list-enter')[0]
-							let _offset=utils.offset(dom)
-							let x=targetLeft-_offset.left
-							let y=targetTop-_offset.top
-							document.getElementsByClassName('flip-list-leave-active')[0].className=''
-							dom.style.webkitTransform='translate3d('+x+'px,'+y+'px,0)'
-							setTimeout(function(){                    
-								dom.style.webkitTransform='translate3d(0px,0px,0)'
-							},50)
-							setTimeout(() => {
-								flag = true
-							}, 500)
-						})
-              
+
+                        vm.$nextTick(() => {
+                            let dom = document.getElementsByClassName('list-wait-enter')[0]
+                            let _offset = utils.offset(dom)
+                            let x = targetLeft - _offset.left
+                            let y = targetTop - _offset.top
+
+                            document.getElementsByClassName('list-add-leave-active')[0].className = ''
+                            dom.style.webkitTransform = 'translate3d(' + x + 'px,' + y + 'px,0)'
+                            setTimeout(function () {
+                                dom.style.webkitTransform = 'translate3d(0px,0px,0)'
+                            }, 50)
+                            setTimeout(() => {
+                                flag = true
+                            }, 300)
+                        })
+
                     }
-
-
-
-
 
                     function checkCrash(target, source, targetIndex) {
                         let targetOffset = utils.offset(target)
@@ -177,7 +187,7 @@
                         itemWidth = itemWidth ? itemWidth : target.offsetWidth;
                         itemHeight = itemHeight ? itemHeight : target.offsetHeight;
                         waitAreaTop = document.getElementsByClassName('item-waitAdd')[0].offsetTop
-                        for (let i = 0, len = source.length; i < len; i++) {
+                        for (let i = 1, len = source.length; i < len; i++) {
                             let ele = source[i].children[0];
                             let sourceOffset = utils.offset(ele)
                             let sourceTop = sourceOffset.top;
@@ -201,7 +211,7 @@
                                     20)) {
                                 if (flag) {
                                     flag = false
-                                    changeItem(targetIndex,targetLeft,targetTop)
+                                    changeItem(targetIndex, targetLeft, targetTop)
                                 }
 
                             }
@@ -288,25 +298,41 @@
                 this.$emit('input', name)
             },
             _clickWaitItem(e, index) {
-                let offset = utils.offset(e.target.parentNode)
-                this.pos = offset;
                 this.activeItemList.push(this.waitItemList.splice(index, 1)[0])
-				this.$nextTick(()=>{
-					let dom=document.getElementsByClassName('flip-list-enter')[0]
-					let _offset=utils.offset(dom)
-					let x=offset.left-_offset.left
-					let y=offset.top-_offset.top
-                    
-					dom.style.webkitTransform='translate3d('+x+'px,'+y+'px,0)'
-					setTimeout(function(){                    
-						dom.style.webkitTransform='translate3d(0px,0px,0)'
-					},50)
-					
-				})
+                this.transformToAdd(e.target.parentNode)
             },
             _deleteAddOne(e, index) {
-
                 this.waitItemList.push(this.activeItemList.splice(index, 1)[0])
+                this.transformToWait(e.target.parentNode.parentNode)
+            },
+            transformToWait(node) {
+                let offset = utils.offset(node)
+                this.$nextTick(() => {
+                    let dom = document.getElementsByClassName('list-wait-enter')[0]
+                    let _offset = utils.offset(dom)
+                    let x = offset.left - _offset.left
+                    let y = offset.top - _offset.top
+                    dom.style.webkitTransform = 'translate3d(' + x + 'px,' + y + 'px,0)'
+                    setTimeout(function () {
+                        dom.style.webkitTransform = 'translate3d(0px,0px,0)'
+                    }, 50)
+                })
+
+            },
+            transformToAdd(node) {
+                let offset = utils.offset(node)
+                this.$nextTick(() => {
+                    console.log(document.getElementsByClassName('list-wait-enter'))
+                    let dom = document.getElementsByClassName('list-add-enter')[0]
+                    let _offset = utils.offset(dom)
+                    let x = offset.left - _offset.left
+                    let y = offset.top - _offset.top
+
+                    dom.style.webkitTransform = 'translate3d(' + x + 'px,' + y + 'px,0)'
+                    setTimeout(function () {
+                        dom.style.webkitTransform = 'translate3d(0px,0px,0)'
+                    }, 50)
+                })
             }
 
         },
@@ -415,7 +441,7 @@
             .fs(@f12);
             margin-left: -12/16rem;
             li {
-
+                position: relative;
                 margin-bottom: 6px;
                 padding-left: 12/16rem;
                 display: inline-block;
@@ -437,28 +463,30 @@
                     transform: translate3d(-50%, -50%, 0);
                 }
             }
+            .touched {
+                animation: bigger 0.3s alternate;
+                animation-fill-mode: both;
+            }
+            .transition {
+                transition: all 0.3s;
+            }
+            .list-add-move,
+            .list-wait-move {
+                transition: all 0.3s;
+            }
+
+            .list-add-enter-to,
+            .list-wait-enter-to {
+                transition: all 0.3s;
+            }
+            .list-add-leave-active,
+            .list-wait-leave-active {
+                position: absolute;
+            }
         }
-        .touched {
-            animation: bigger 0.5s alternate;
-            animation-fill-mode: both;
-        }
-        .transition {
-            transition: all 0.3s;
-        }
-        .flip-list-move {
-            transition: all 0.5s;
-        }
-//         .flip-list-enter {
-//             /* .list-complete-leave-active for below version 2.1.8 */
-//                 opacity: 0;
-//                 transform: translateY(30px);
-//         }
-		.flip-list-enter-to{
-			transition: all 0.5s;
-		}
-        .flip-list-leave-active {
-            position: absolute;		
-        }
+
+
+
 
         @keyframes bigger {
             0% {
