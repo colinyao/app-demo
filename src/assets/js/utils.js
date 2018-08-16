@@ -1,7 +1,7 @@
 let defaultFn = () => {}
 
 const utils = {
-    debounce: (fn, delay) => {
+    debounce: (fn, delay) => {  //节流函数
         let _fn = typeof fn === 'function' ? fn : defaultFn,
             _delay = delay || 200,
             timer = ';'
@@ -15,6 +15,29 @@ const utils = {
             }, delay);
         }
     },
+	throttle:(fn,delay,immediate=100)=>{
+		let _fn = typeof fn === 'function' ? fn : defaultFn,
+			_delay = delay || 200,
+			timer = ';',
+			newTime,
+			oldTime;
+		    newTime=oldTime=new Date().getTime();
+		return function () {
+			// 通过 ‘this’ 和 ‘arguments’ 获取函数的作用域和变量
+			let context = this;
+			let args = arguments;
+			newTime=new Date().getTime();
+			if(newTime-oldTime>100){
+				fn.apply(context, args);
+			}else{
+				clearTimeout(timer);
+				timer = setTimeout(function () {
+					fn.apply(context, args);
+				}, delay);
+			}
+			
+		}
+	},
     getStyle: (ele, opts) => {
         let styles = {}
         let styleColection = window.getComputedStyle(ele);

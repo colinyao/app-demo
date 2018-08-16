@@ -85,7 +85,7 @@
                             parent.className = parent.className.replace(/\s?transition/, '');
                         }
                     }
-                    let checkCarshFun = utils.debounce(checkCrash, 20)
+					let checkCarshFun=utils.throttle(checkCrash,20)
                     el.ontouchmove = (e) => {
                         let touch = e.changedTouches[0];
                         let target = e.target.parentNode;
@@ -107,6 +107,7 @@
                         let parent = e.target.parentNode;
                         target.className = target.className.replace(/\s?touched/, '');
                         parent.className = parent.className ? parent.className + ' transition' : 'transition';
+						target.style.zIndex = '1'
                         parent.style.webkitTransform = parent.style.webkitTransform.replace(
                             /translate3d\([\s\S]*\)/, '') + ' translate3d(0px,0px,0px)';
                     }
