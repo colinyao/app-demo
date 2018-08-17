@@ -29,7 +29,8 @@
                                     <p class="description" v-html="item.mblog.text"></p>
                                     <div class="imgs">
                                         <div class="my-gallery" :data-pswp-uid="1" itemscope itemtype="http://schema.org/ImageGallery">
-                                            <img class="previewer-demo-img" v-for="(_item, _index) in list" :key="'img'+_index+item.mblog.id" :id="'img'+_index+item.mblog.id" :src="_item.src" width="100" @click="show(_index,'img'+_index+item.mblog.id)">
+                                            <img class="previewer-demo-img" v-for="(_item, _index) in list" :key="'img'+_index+item.mblog.id" :id="'img'+_index+item.mblog.id"
+                                                :src="_item.src" width="100" @click="show(_index,'img'+_index+item.mblog.id)">
                                         </div>
                                     </div>
                                 </div>
@@ -58,9 +59,9 @@
         },
         data() {
             return {
-				ws:'',
+                ws: '',
                 itemList: [],
-				activeImgId:'',
+                activeImgId: '',
                 list: [{
                         msrc: 'http://ww1.sinaimg.cn/thumbnail/663d3650gy1fplwu9ze86j20m80b40t2.jpg',
                         src: 'http://ww1.sinaimg.cn/large/663d3650gy1fplwu9ze86j20m80b40t2.jpg',
@@ -77,48 +78,50 @@
                         src: 'http://ww1.sinaimg.cn/large/663d3650gy1fplwwcynw2j20p00b4js9.jpg'
                     }
                 ],
-                
+
             }
         },
         computed: {
             pageId() {
                 return this.$route.name
             },
-			options() {
-				return {getThumbBoundsFn:(index)=>{
-			
-					// find thumbnail element
-					let thumbnail='';
-					let thumbnails = document.querySelectorAll('.previewer-demo-img')
-					for(let ele of thumbnails){
-						if(ele.id===this.activeImgId){
-							thumbnail=ele;
-							break;
-						}
-					}
+            options() {
+                return {
+                    getThumbBoundsFn: (index) => {
 
-					// get window scroll Y
-					let pageYScroll = window.pageYOffset || document.documentElement.scrollTop
-					// optionally get horizontal scroll
-					// get position of element relative to viewport
-					let rect = thumbnail.getBoundingClientRect()
-					// w = width
-					return {
-						x: rect.left,
-						y: rect.top + pageYScroll,
-						w: rect.width
-					}
-					// Good guide on how to get element coordinates:
-					// http://javascript.info/tutorial/coordinates
-				}
-				}
-			}
+                        // find thumbnail element
+                        let thumbnail = '';
+                        let thumbnails = document.querySelectorAll('.previewer-demo-img')
+                        for (let ele of thumbnails) {
+                            if (ele.id === this.activeImgId) {
+                                thumbnail = ele;
+                                break;
+                            }
+                        }
+
+                        // get window scroll Y
+                        let pageYScroll = window.pageYOffset || document.documentElement.scrollTop
+                        // optionally get horizontal scroll
+                        // get position of element relative to viewport
+                        let rect = thumbnail.getBoundingClientRect()
+                        // w = width
+                        return {
+                            x: rect.left,
+                            y: rect.top + pageYScroll,
+                            w: rect.width
+                        }
+                        // Good guide on how to get element coordinates:
+                        // http://javascript.info/tutorial/coordinates
+                    }
+                }
+            }
         },
         created() {
             // H5 plus事件处理
-			mui.plusReady(()=>{	
-				 this.ws = plus.webview.currentWebview();
-			});
+            mui.plusReady(() => {
+                this.ws = plus.webview.currentWebview();
+
+            });
 
         },
         mounted() {
@@ -138,16 +141,20 @@
                 }
             });
             setTimeout(_ => {
-                mui('#refreshContainer').pullRefresh().enablePullupToRefresh();
+                // mui('#refreshContainer').pullRefresh().enablePullupToRefresh();
+                this.ws.setPullToRefresh({
+                    support: false
+                }, function () {});
+				
             }, 200)
-            this.$refs.previewer.$on('on-close',()=>{
-				if(this.ws){
-					this.ws.setStyle({
-						top: '45px'
-					});
-				}
-			})
-			
+            this.$refs.previewer.$on('on-close', () => {
+                if (this.ws) {
+                    this.ws.setStyle({
+                        top: '45px'
+                    });
+                }
+            })
+
         },
         methods: {
             _pulldown() {
@@ -184,13 +191,13 @@
                 }
 
             },
-            show(index,id) {
-				if(this.ws){
-					this.ws.setStyle({
-						top: '0px'
-					});
-				}
-				this.activeImgId=id
+            show(index, id) {
+                if (this.ws) {
+                    this.ws.setStyle({
+                        top: '0px'
+                    });
+                }
+                this.activeImgId = id
                 this.$refs.previewer.show(index)
             }
         },

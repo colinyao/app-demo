@@ -65,6 +65,7 @@
                         itemHeight = ''
                     el.ontouchstart = (e) => {
                         e.stopPropagation()
+						e.preventDefault()
                         let target = e.target,
                             parent = e.target.parentNode,
                             reg = /translate3d\(([0-9.]{1,})\w+,\s+([0-9.]{1,})\w+,\s+0\w+\)/;
@@ -94,6 +95,8 @@
                     }
                     let checkCarshFun = utils.throttle(checkCrash, 20)
                     el.ontouchmove = (e) => {
+						e.stopPropagation()
+						e.preventDefault()
                         if (refuse) {
                             return;
                         }
@@ -112,6 +115,7 @@
                     }
                     el.ontouchend = (e) => {
                         e.stopPropagation()
+						e.preventDefault()
                         if (refuse) {
                             return;
                         }
@@ -155,7 +159,7 @@
                             //防止交换期间，多次触发碰撞
                             setTimeout(() => {
                                 flag = true
-                            }, 100)
+                            }, 300)
                         })
                     }
 
@@ -175,7 +179,7 @@
                             }, 50)
                             setTimeout(() => {
                                 flag = true
-                            }, 300)
+                            }, 500)
                         })
 
                     }
@@ -468,16 +472,16 @@
                 animation-fill-mode: both;
             }
             .transition {
-                transition: all 0.3s;
+                transition: transform 0.5s;
             }
             .list-add-move,
             .list-wait-move {
-                transition: all 0.3s;
+                transition: transform 0.5s;
             }
 
             .list-add-enter-to,
             .list-wait-enter-to {
-                transition: all 0.3s;
+                transition: transform 0.5s;
             }
             .list-add-leave-active,
             .list-wait-leave-active {
