@@ -8,22 +8,20 @@
                 </a>
             </div>
         </div>
-        <div class="addBtn">
+        <div class="addBtn" :class="{'active':showClassify}" @click="()=>{this.updateShowClassify(!this.showClassify)}">
             <span class="mui-icon mui-icon-plusempty"></span>
         </div>
-        <div class="classify">
+        <div class="classify" :class="{'active':showClassify}">
             <div class="header">
                 <p class="title">我的分类</p>
-                <div class="btn-edit" @click="editStatus=true">编辑</div>
+                <div class="btn-edit" @click="editStatus=!editStatus">{{editStatus?'完成':'编辑'}}</div>
             </div>
-
-
-            <transition-group name="flip-list" tag="ul" class="item-list item-added" v-drapEvent>
-                <li :class="{'default':index===0,'selected':currentVal==item.name}" v-for="(item,index) in  activeItemList" :key="item.name"
-                    @click="_clickAddedItem($event,item.name)">
+            <transition-group name="list-add" tag="ul" class="item-list item-added" v-drapEvent>
+                <li class="item" :class="{'default':index===0,'selected':currentVal==item.name}" v-for="(item,index) in  activeItemList"
+                    :key="item.name" @click="_clickAddedItem($event,item.name)">
                     <div @contextmenu.prevent class="drag-container">
-                        <div class="drag-content">
-                            <i class="close-btn mui-icon mui-icon-close" v-show="editStatus&&item.name!==recommend" @click.stop="_deleteAddOne($event,index)"></i>
+                        <div class="drag-content" :class="{'default':index===0,'selected':currentVal==item.name}">
+                            <i class="close-btn mui-icon mui-icon-close" v-show="editStatus&&item.name!=='recommend'" @click.stop="_deleteAddOne($event,index)"></i>
                             {{item.label}}
                         </div>
                     </div>
@@ -32,8 +30,8 @@
             <div class="header">
                 <p class="title">点击增加分类</p>
             </div>
-            <transition-group name="flip-list" tag="ul" class="item-list item-waitAdd">
-                <li v-for="(item,index) of waitItemList" :key="item.name" @click="_clickWaitItem($event,index)">
+            <transition-group name="list-wait" tag="ul" class="item-list item-waitAdd">
+                <li class="item" v-for="(item,index) of waitItemList" :key="item.name" @click="_clickWaitItem($event,index)">
                     <span>{{item.label}}</span>
                 </li>
             </transition-group>
@@ -46,6 +44,7 @@
         routesHash
     } from '../pages/index-content/routeConfig'
     import utils from '../assets/js/utils.js'
+	import {mapGetters,mapMutations} from 'vuex'
     export default {
         name: 'homeSubNavbar',
         props: {
@@ -57,57 +56,98 @@
             drapEvent: {
                 bind: (el, binding, vnode) => {
                     let vm = vnode.context,
+                        refuse = false,
                         flag = true;
                     let x, y, _x, _y, disX, disY, _disX, _disY;
                     let waitAreaTop = '',
                         itemWidth = '',
-                        itemHeight = ''
+                        itemHeight = '',
+						timer=''
                     el.ontouchstart = (e) => {
-                        e.stopPropagation()
+                        // e.stopPropagation()
+						e.preventDefault()
                         let target = e.target,
-                            parent = e.target.parentNode,
-                            reg = /translate3d\(([0-9.]{1,})\w+,\s+([0-9.]{1,})\w+,\s+0\w+\)/;
-                        if (!!~target.className.indexOf('drag-content')) {
-                            let touch = e.touches[0];
-                            target.style.zIndex = '9999'
-                            x = touch.clientX;
-                            y = touch.clientY;
-                            let trans = reg.exec(parent.style.webkitTransform) || []
-                            if (trans.length) {
-                                _disX = +trans[1]
-                                _disY = +trans[2]
+						    parent = target.parentNode,
+						    touch = e.touches[0];
 
-                            } else {
-                                _disX = 0;
-                                _disY = 0;
-                            }
-                            target.className = target.className ? target.className + ' touched' : 'touched';
-                            parent.className = parent.className.replace(/\s?transition/, '');
+						if(!vm.editStatus){
+							timer=setTimeout(()=>{ 
+								 vm.editStatus=true;
+								 touchStart(target,parent,touch)
+								 startInit(target,parent)
+							},2000)
+							return
+						}
+                        if (!~target.className.indexOf('drag-content') || !!~target.className.indexOf('default')) {
+                            refuse = true;
+                            return;
+                        } else {
+                            refuse = false;
+                        }
+                        if (!!~target.className.indexOf('drag-content')) {
+                            touchStart(target,parent,touch)
+							startInit(target,parent)
                         }
                     }
+					function touchStart(target,parent,touch){
+						let reg = /translate3d\(([0-9.]{1,})\w+,\s+([0-9.]{1,})\w+,\s+0\w+\)/;
+							x = touch.clientX;
+							y = touch.clientY;
+							let trans = reg.exec(parent.style.webkitTransform) || []
+							if (trans.length) {
+								_disX = +trans[1]
+								_disY = +trans[2]
+							} else {
+								_disX = 0;
+								_disY = 0;
+							}
+					}
+					function startInit(target,parent){
+						target.className = target.className ? target.className + ' touched' : 'touched';
+						target.parentNode.parentNode.style.zIndex = '9999'  //li元素
+						parent.className = parent.className.replace(/\s?transition/, '');
+					}
 					let checkCarshFun=utils.throttle(checkCrash,20)
                     el.ontouchmove = (e) => {
+						e.preventDefault()
+						e.stopPropagation()
+                        if (refuse) {
+                            return;
+                        }
                         let touch = e.changedTouches[0];
-                        let target = e.target.parentNode;
+                        let target = e.target;
+						let parent=e.target.parentNode;
+						let reg = /translate3d\(([0-9.]{1,})\w+,\s+([0-9.]{1,})\w+,\s+0\w+\)/;
+						if(!vm.editStatus){
+	                       touchStart(target,parent,touch)
+						   return
+						}
+
                         _x = touch.clientX;
                         _y = touch.clientY;
                         disX = _x - x;
                         disY = _y - y;
 
-                        target.style.webkitTransform = target.style.webkitTransform.replace(
+                        parent.style.webkitTransform = parent.style.webkitTransform.replace(
                             /translate3d\([\s\S]*\)/, '') + ' translate3d(' + (disX + _disX) + 'px,' + (
                             disY + _disY) + 'px,0)';
-                        let targetIndex = getIndex(target, e.currentTarget.children);
-                        checkCarshFun(target, e.currentTarget.children, targetIndex)
+                        let parentIndex = getIndex(parent, e.currentTarget.children);
+                        checkCarshFun(parent, e.currentTarget.children, parentIndex)
                     }
                     el.ontouchend = (e) => {
-                        e.stopPropagation()
+						e.preventDefault()
+						if(timer){
+							clearTimeout(timer)
+						}
+                        if (refuse||!vm.editStatus) {
+                            return;
+                        }
                         let touch = e.touches[0];
                         let target = e.target;
                         let parent = e.target.parentNode;
                         target.className = target.className.replace(/\s?touched/, '');
                         parent.className = parent.className ? parent.className + ' transition' : 'transition';
-						target.style.zIndex = '1'
+						target.parentNode.parentNode.style.zIndex = '1'
                         parent.style.webkitTransform = parent.style.webkitTransform.replace(
                             /translate3d\([\s\S]*\)/, '') + ' translate3d(0px,0px,0px)';
                     }
@@ -136,31 +176,32 @@
                         vm.$nextTick(() => {
                             //去除transition抖动
                             target.parentNode.className = target.parentNode.className.replace(
-                                /\s?flip-list-move/, '');
+                                /\s?list-add-move/, '');
                             //更新
                             waitAreaTop = document.getElementsByClassName('item-waitAdd')[0].offsetTop
                             //防止交换期间，多次触发碰撞
                             setTimeout(() => {
                                 flag = true
-                            }, 500)
+                            }, 50)
                         })
                     }
 
                     function changeItem(targetIndex, targetLeft, targetTop) {
                         vm.waitItemList.push(vm.activeItemList.splice(targetIndex, 1)[0])
                         vm.$nextTick(() => {
-                            let dom = document.getElementsByClassName('flip-list-enter')[0]
+                            let dom = document.getElementsByClassName('list-wait-enter')[0]
                             let _offset = utils.offset(dom)
                             let x = targetLeft - _offset.left
                             let y = targetTop - _offset.top
-                            document.getElementsByClassName('flip-list-leave-active')[0].className = ''
+
+                            document.getElementsByClassName('list-add-leave-active')[0].className = ''
                             dom.style.webkitTransform = 'translate3d(' + x + 'px,' + y + 'px,0)'
                             setTimeout(function () {
                                 dom.style.webkitTransform = 'translate3d(0px,0px,0)'
                             }, 50)
                             setTimeout(() => {
                                 flag = true
-                            }, 500)
+                            }, 300)
                         })
                     }
 
@@ -170,8 +211,8 @@
                         let targetLeft = targetOffset.left + disX + _disX;
                         itemWidth = itemWidth ? itemWidth : target.offsetWidth;
                         itemHeight = itemHeight ? itemHeight : target.offsetHeight;
-                        waitAreaTop = document.getElementsByClassName('item-waitAdd')[0].offsetTop
-                        for (let i = 0, len = source.length; i < len; i++) {
+                        waitAreaTop = document.getElementsByClassName('item-waitAdd')[0].offsetTop  //计算wait区域的offsetTop
+                        for (let i = 1, len = source.length; i < len; i++) {
                             let ele = source[i].children[0];
                             let sourceOffset = utils.offset(ele)
                             let sourceTop = sourceOffset.top;
@@ -205,11 +246,15 @@
                 }
             }
         },
+		computed:{
+		    ...mapGetters(['showClassify'])
+		},
         data() {
             return {
                 currentVal: 0,
                 editStatus: false,
                 waitItemList: [],
+				navbarWidth:0,
                 activeItemList: [{
                     label: '推荐',
                     name: 'recommend'
@@ -261,8 +306,10 @@
                 indicators: false, //是否显示滚动条
                 bounce: false //是否启用回弹
             });
+			this.navbarWidth=document.getElementById('homeSubNavbar').offsetWidth
         },
         methods: {
+			...mapMutations(['updateShowClassify']),
             _waitItemList() {
                 let _routesHash = Object.assign({}, routesHash)
                 this.activeItemList.forEach(ele => {
@@ -276,17 +323,40 @@
             _clickItem(name) {
                 this.currentVal = name
                 this.$emit('input', name)
+				
             },
             _clickAddedItem(e, name) {
                 this.currentVal = name
                 this.$emit('input', name)
+				this.updateShowClassify(false)
             },
             _clickWaitItem(e, index) {
-                let offset = utils.offset(e.target.parentNode)
-                this.pos = offset;
                 this.activeItemList.push(this.waitItemList.splice(index, 1)[0])
+                this.transformToAdd(e.target.parentNode)
+            },
+            _deleteAddOne(e, index) {
+                this.waitItemList.push(this.activeItemList.splice(index, 1)[0])
+                this.transformToWait(e.target.parentNode.parentNode)
+            },
+            transformToWait(node) {
+                let offset = utils.offset(node)
                 this.$nextTick(() => {
-                    let dom = document.getElementsByClassName('flip-list-enter')[0]
+                    let dom = document.getElementsByClassName('list-wait-enter')[0]
+                    let _offset = utils.offset(dom)
+                    let x = offset.left - _offset.left
+                    let y = offset.top - _offset.top
+                    dom.style.webkitTransform = 'translate3d(' + x + 'px,' + y + 'px,0)'
+                    setTimeout(function () {
+                        dom.style.webkitTransform = 'translate3d(0px,0px,0)'
+                    }, 50)
+                })
+
+            },
+            transformToAdd(node) {
+                let offset = utils.offset(node)
+                this.$nextTick(() => {
+                    console.log(document.getElementsByClassName('list-wait-enter'))
+                    let dom = document.getElementsByClassName('list-add-enter')[0]
                     let _offset = utils.offset(dom)
                     let x = offset.left - _offset.left
                     let y = offset.top - _offset.top
@@ -295,18 +365,18 @@
                     setTimeout(function () {
                         dom.style.webkitTransform = 'translate3d(0px,0px,0)'
                     }, 50)
-
                 })
-            },
-            _deleteAddOne(e, index) {
-
-                this.waitItemList.push(this.activeItemList.splice(index, 1)[0])
             }
 
         },
         watch: {
             value(newVal) {
-                this.currentVal = newVal
+                this.currentVal = newVal;
+				let selectDom=document.querySelector('.itemlist .selected')
+			    if(Math.abs((selectDom.offsetLeft+selectDom.offsetWidth/2+20)-(this.navbarWidth-70)/2)>50){
+					 mui('#homeSubNavbar').scroll().scrollTo(-(this.navbarWidth-70)/2-(this.navbarWidth-70)/2,0,100);//100毫秒滚动到顶
+				}
+				
             }
         }
     }
@@ -322,13 +392,16 @@
 
     .mui-scroll-wrapper {
         position: fixed;
+		z-index:1;
         padding-left: 20px;
+		padding-right:50px;
         box-sizing: border-box;
         overflow: hidden;
     }
 
     .mui-scroll {
         position: absolute;
+		z-index:2;
     }
 
     .itemlist {
@@ -340,11 +413,12 @@
             line-height: 40px;
             color: #333;
         }
+		.selected {
+			color: @c2
+		}
     }
 
-    .selected {
-        color: @c2
-    }
+
 
     .default {
         opacity: 0.75
@@ -365,7 +439,7 @@
         line-height: 40px;
         width: 40px;
         position: absolute;
-        z-index: 6;
+        z-index: 10;
         right: 0;
         top: 0;
         text-align: center;
@@ -376,7 +450,15 @@
             font-size: 28px;
             line-height: 40px;
             vertical-align: top;
+			transition:transform 0.3s;
         }
+		&.active{
+			box-shadow: none;
+			span{
+				transform:rotate3d(0,0,1,45deg);
+				transform-origin: center center;
+			}
+		}
     }
 
     .classify {
@@ -388,6 +470,11 @@
         background: #fff;
         z-index: 5;
         padding: 0 15px;
+		transform:translate3d(0,-100%,0);
+		transition:transform 0.3s;
+		&.active{
+			transform:translate3d(0,0,0);
+		}
         .header {
             .vc;
             line-height: 40px;
@@ -408,8 +495,11 @@
         .item-list {
             .fs(@f12);
             margin-left: -12/16rem;
+			.selected {
+				color: @c2
+			}
             li {
-
+                position: relative;
                 margin-bottom: 6px;
                 padding-left: 12/16rem;
                 display: inline-block;
@@ -431,25 +521,27 @@
                     transform: translate3d(-50%, -50%, 0);
                 }
             }
-        }
-        .touched {
-            animation: bigger 0.5s alternate;
-            animation-fill-mode: both;
-        }
-        .transition {
-            transition: all 0.3s;
-        }
-        .flip-list-move {
-            transition: all 0.5s;
-        }
+            .touched {
+                animation: bigger 0.3s alternate;
+                animation-fill-mode: both;
+            }
+            .transition {
+                transition: all 0.3s;
+            }
+            .list-add-move,
+            .list-wait-move {
+                transition: all 0.3s;
+            }
 
-        .flip-list-enter-to {
-            transition: all 0.5s;
+            .list-add-enter-to,
+            .list-wait-enter-to {
+                transition: all 0.3s;
+            }
+            .list-add-leave-active,
+            .list-wait-leave-active {
+                position: absolute;
+            }
         }
-        .flip-list-leave-active {
-            position: absolute;
-        }
-
         @keyframes bigger {
             0% {
                 transform: scale3d(1, 1, 1);

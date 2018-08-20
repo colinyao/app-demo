@@ -14,6 +14,17 @@ routes.forEach(ele=>{
 		state[ele.name]=payload
 	}
 })
+_state=Object.assign(_state,{
+	 showClassify:false
+})
+_getters=Object.assign(_getters,{
+	showClassify:(state)=>state.showClassify
+})
+_mutations=Object.assign(_mutations,{
+	 updateShowClassify:(state,payload)=>{
+		  state.showClassify=payload
+	 }
+})
 const store = new Vuex.Store({
    state:_state,
    getters:_getters,

@@ -1,6 +1,6 @@
 <template>
     <div class="wrapper">
-		<homeSubNavbar class="subBar" v-model="activeSubItem"></homeSubNavbar>
+		<homeSubNavbar ref="homeSubNavbar" class="subBar" v-model="activeSubItem"></homeSubNavbar>
         <keep-alive>
 			<router-view></router-view>
 		</keep-alive>
@@ -18,7 +18,7 @@
             }
         },
         mounted() {
-        
+
         },
         methods: {
          

@@ -29,7 +29,8 @@
                                     <p class="description" v-html="item.mblog.text"></p>
                                     <div class="imgs">
                                         <div class="my-gallery" :data-pswp-uid="1" itemscope itemtype="http://schema.org/ImageGallery">
-                                            <img class="previewer-demo-img" v-for="(_item, _index) in list" :key="'img'+_index+item.mblog.id" :id="'img'+_index+item.mblog.id" :src="_item.src" width="100" @click="show(_index,'img'+_index+item.mblog.id)">
+                                            <img class="previewer-demo-img" v-for="(_item, _index) in list" :key="'img'+_index+item.mblog.id" :id="'img'+_index+item.mblog.id"
+                                                :src="_item.src" width="100" @click="show(_index,'img'+_index+item.mblog.id)">
                                         </div>
                                     </div>
                                 </div>
@@ -58,9 +59,9 @@
         },
         data() {
             return {
-				ws:'',
+                ws: '',
                 itemList: [],
-				activeImgId:'',
+                activeImgId: '',
                 list: [{
                         msrc: 'http://ww1.sinaimg.cn/thumbnail/663d3650gy1fplwu9ze86j20m80b40t2.jpg',
                         src: 'http://ww1.sinaimg.cn/large/663d3650gy1fplwu9ze86j20m80b40t2.jpg',
@@ -77,47 +78,51 @@
                         src: 'http://ww1.sinaimg.cn/large/663d3650gy1fplwwcynw2j20p00b4js9.jpg'
                     }
                 ],
-                
+
             }
         },
         computed: {
             pageId() {
                 return this.$route.name
             },
-			options() {
-				return {getThumbBoundsFn:(index)=>{
-			
-					// find thumbnail element
-					let thumbnail='';
-					let thumbnails = document.querySelectorAll('.previewer-demo-img')
-					for(let ele of thumbnails){
-						if(ele.id===this.activeImgId){
-							thumbnail=ele;
-							break;
-						}
-					}
-					// get window scroll Y
-					let pageYScroll = window.pageYOffset || document.documentElement.scrollTop
-					// optionally get horizontal scroll
-					// get position of element relative to viewport
-					let rect = thumbnail.getBoundingClientRect()
-					// w = width
-					return {
-						x: rect.left,
-						y: rect.top + pageYScroll,
-						w: rect.width
-					}
-					// Good guide on how to get element coordinates:
-					// http://javascript.info/tutorial/coordinates
-				}
-				}
-			}
+            showClassify() {
+                return store.getters.showClassify
+            },
+            options() {
+                return {
+                    getThumbBoundsFn: (index) => {
+
+                        // find thumbnail element
+                        let thumbnail = '';
+                        let thumbnails = document.querySelectorAll('.previewer-demo-img')
+                        for (let ele of thumbnails) {
+                            if (ele.id === this.activeImgId) {
+                                thumbnail = ele;
+                                break;
+                            }
+                        }
+                        // get window scroll Y
+                        let pageYScroll = window.pageYOffset || document.documentElement.scrollTop
+                        // optionally get horizontal scroll
+                        // get position of element relative to viewport
+                        let rect = thumbnail.getBoundingClientRect()
+                        // w = width
+                        return {
+                            x: rect.left,
+                            y: rect.top + pageYScroll,
+                            w: rect.width
+                        }
+                        // Good guide on how to get element coordinates:
+                        // http://javascript.info/tutorial/coordinates
+                    }
+                }
+            }
         },
         created() {
             // H5 plus事件处理
-			mui.plusReady(()=>{	
-				 this.ws = plus.webview.currentWebview();
-			});
+            mui.plusReady(() => {
+                this.ws = plus.webview.currentWebview();
+            });
         },
         mounted() {
             mui.init({
@@ -138,14 +143,15 @@
             setTimeout(_ => {
                 mui('#refreshContainer').pullRefresh().enablePullupToRefresh();
             }, 200)
-            this.$refs.previewer.$on('on-close',()=>{
-				if(this.ws){
-					this.ws.setStyle({
-						top: '45px'
-					});
-				}
-			})
-			
+            this.$refs.previewer.$on('on-close', () => {
+                if (this.ws) {
+                    this.ws.setStyle({
+                        top: '45px'
+                    });
+                }
+            })
+
+
         },
         methods: {
             _pulldown() {
@@ -179,13 +185,13 @@
                     }, 1000)
                 }
             },
-            show(index,id) {
-				if(this.ws){
-					this.ws.setStyle({
-						top: '0px'
-					});
-				}
-				this.activeImgId=id
+            show(index, id) {
+                if (this.ws) {
+                    this.ws.setStyle({
+                        top: '0px'
+                    });
+                }
+                this.activeImgId = id
                 this.$refs.previewer.show(index)
             }
         },
@@ -194,6 +200,20 @@
                 this.itemList = store.getters[`get${newVal}`]
                 mui('#refreshContainer').pullRefresh().scrollTo(0, 0, 0)
                 mui('#refreshContainer').pullRefresh().pulldownLoading();
+            },
+            showClassify(newVal) {
+                if (newVal) {
+                    //暂时禁止滚动
+                    this.ws.setPullToRefresh({
+                        support: false
+                    });
+					mui('#refreshContainer').scroll().setStopped(true);//暂时启动滚动
+                } else {
+                    //mui('#refreshContainer').scroll().setStopped(false);//暂时启动滚动
+					this.ws.setPullToRefresh({
+						support: true
+					});
+                }
             }
         }
     }
@@ -204,13 +224,16 @@
         background: transparent;
         margin-top: 40px;
     }
+
     .list-item {
         background: #fff;
         .pd10;
     }
+
     .item-head {
         display: flex;
     }
+
     .head-img {
         width: 2rem;
         height: 2rem;
@@ -222,6 +245,7 @@
             border-radius: 100%;
         }
     }
+
     .user-info {
         flex: 1;
         .userName {
@@ -234,9 +258,11 @@
             }
         }
     }
+
     .description {
         .fs(@f14);
     }
+
     /deep/ .mui-pull-top-pocket {
         top: 40px;
     }
