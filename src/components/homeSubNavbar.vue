@@ -62,20 +62,22 @@
                     let x, y, _x, _y, disX, disY, _disX, _disY;
                     let waitAreaTop = '',
                         itemWidth = '',
-                        itemHeight = ''
+                        itemHeight = '',
+						sourceData=[]
                     el.ontouchstart = (e) => {
                         e.stopPropagation()
 						e.preventDefault()
                         let target = e.target,
                             parent = e.target.parentNode,
+							targetClass=target.className,
                             reg = /translate3d\(([0-9.]{1,})\w+,\s+([0-9.]{1,})\w+,\s+0\w+\)/;
-                        if (!~target.className.indexOf('drag-content') || !!~target.className.indexOf('default')) {
+                        if (!~targetClass.indexOf('drag-content') || !!~targetClass.indexOf('default')) {
                             refuse = true;
                             return;
                         } else {
                             refuse = false;
                         }
-                        if (!!~target.className.indexOf('drag-content')) {
+                        if (!!~targetClass.indexOf('drag-content')) {
                             let touch = e.touches[0];
                             target.style.zIndex = '9999'
                             x = touch.clientX;
@@ -89,8 +91,9 @@
                                 _disX = 0;
                                 _disY = 0;
                             }
-                            target.className = target.className ? target.className + ' touched' : 'touched';
+                            target.className = targetClass ? targetClass + ' touched' : 'touched';
                             parent.className = parent.className.replace(/\s?transition/, '');
+							sourceData=keepSourceData(target,e.currentTarget.children)
                         }
                     }
                     let checkCarshFun = utils.throttle(checkCrash, 20)
@@ -137,7 +140,11 @@
                         }
                     }
 
-                    function switchPos(pos1, pos2, target) {
+                    function switchPos(pos1, pos2, target,source) {
+						//防止元素位置变化，定位抖动
+						target.style.webkitTransform = target.style.webkitTransform.replace(
+								/translate3d\([\s\S]*\)/, '') + ' translate3d(' + disX + _disX + 'px,' + disY +
+							_disY + 'px,0)';
                         if (pos1 > pos2) {
                             vm.activeItemList.splice(pos2, 1, vm.activeItemList[pos1], vm.activeItemList[pos2])
                             vm.activeItemList.splice(pos1 + 1, 1)
@@ -145,20 +152,18 @@
                             vm.activeItemList.splice(pos2, 1, vm.activeItemList[pos2], vm.activeItemList[pos1])
                             vm.activeItemList.splice(pos1, 1)
                         }
-                        target.className = target.className.replace(/\s?touched/, '');
-                        target.style.webkitTransform = target.style.webkitTransform.replace(
-                                /translate3d\([\s\S]*\)/, '') + ' translate3d(' + disX + _disX + 'px,' + disY +
-                            _disY + 'px,0)';
+//                         target.style.webkitTransform = target.style.webkitTransform.replace(
+//                                 /translate3d\([\s\S]*\)/, '') + ' translate3d(' + disX + _disX + 'px,' + disY +
+//                             _disY + 'px,0)';
 
                         vm.$nextTick(() => {
                             //去除transition抖动
                             target.parentNode.className = target.parentNode.className.replace(
                                 /\s?list-add-move/, '');
-                            //更新
-                            waitAreaTop = document.getElementsByClassName('item-waitAdd')[0].offsetTop
                             //防止交换期间，多次触发碰撞
                             setTimeout(() => {
                                 flag = true
+								sourceData=keepSourceData(target,source)
                             }, 300)
                         })
                     }
@@ -179,25 +184,35 @@
                             }, 50)
                             setTimeout(() => {
                                 flag = true
+								sourceData=keepSourceData(target,source)
                             }, 500)
                         })
 
                     }
-
+                    function keepSourceData(target,source){
+						let sourceData=[]
+						itemWidth = itemWidth ? itemWidth : target.offsetWidth;
+						itemHeight = itemHeight ? itemHeight : target.offsetHeight;
+						waitAreaTop = document.getElementsByClassName('item-waitAdd')[0].offsetTop
+						for(let i=0,len=source.length;i<len;i++){
+							let ele = source[i].children[0];
+							let sourceOffset = utils.offset(ele)
+							let sourceTop = sourceOffset.top;
+							let sourceLeft = sourceOffset.left;
+							sourceData.push({ele:ele,top:sourceTop,left:sourceLeft})
+						}
+						return sourceData
+					}
                     function checkCrash(target, source, targetIndex) {
                         let targetOffset = utils.offset(target)
                         let targetTop = targetOffset.top + disY + _disY;
                         let targetLeft = targetOffset.left + disX + _disX;
-                        itemWidth = itemWidth ? itemWidth : target.offsetWidth;
-                        itemHeight = itemHeight ? itemHeight : target.offsetHeight;
-                        waitAreaTop = document.getElementsByClassName('item-waitAdd')[0].offsetTop
-                        for (let i = 1, len = source.length; i < len; i++) {
-                            let ele = source[i].children[0];
-                            let sourceOffset = utils.offset(ele)
-                            let sourceTop = sourceOffset.top;
-                            let sourceLeft = sourceOffset.left;
+                        
+                        for (let i = 1, len = sourceData.length; i < len; i++) {
+                            let sourceTop=sourceData[i].top;
+							let sourceLeft=sourceData[i].left;
 
-                            if (ele !== target && !((targetTop > (sourceTop + 1 / 3 * itemHeight)) || ((targetTop +
+                            if (sourceData[i].ele !== target && !((targetTop > (sourceTop + 1 / 3 * itemHeight)) || ((targetTop +
                                     itemHeight) < (sourceTop + 2 / 3 * itemHeight)) || (targetLeft > (
                                     sourceLeft + 1 / 3 * itemWidth)) || ((targetLeft + itemWidth) < (
                                     sourceLeft + 2 / 3 * itemWidth)))) {
@@ -207,7 +222,7 @@
                                     disX = _x - x
                                     disY = _y - y
                                     flag = false;
-                                    switchPos(targetIndex, i, target)
+                                    switchPos(targetIndex, i, target,source)
                                 }
                             }
 
@@ -215,7 +230,7 @@
                                     20)) {
                                 if (flag) {
                                     flag = false
-                                    changeItem(targetIndex, targetLeft, targetTop)
+                                    changeItem(targetIndex, targetLeft, targetTop,target,source)
                                 }
 
                             }
