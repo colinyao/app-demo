@@ -78,6 +78,7 @@
 							},2000)
 							return
 						}
+						//默认元素非drag-content元素不能拖动
                         if (!~target.className.indexOf('drag-content') || !!~target.className.indexOf('default')) {
                             refuse = true;
                             return;
@@ -85,6 +86,7 @@
                             refuse = false;
                         }
                         if (!!~target.className.indexOf('drag-content')) {
+							
                             touchStart(target,parent,touch)
 							startInit(target,parent)
                         }
@@ -93,18 +95,15 @@
 						let reg = /translate3d\(([0-9.]{1,})\w+,\s+([0-9.]{1,})\w+,\s+0\w+\)/;
 							x = touch.clientX;
 							y = touch.clientY;
-							let trans = reg.exec(parent.style.webkitTransform) || []
-							if (trans.length) {
-								_disX = +trans[1]
-								_disY = +trans[2]
-							} else {
-								_disX = 0;
-								_disY = 0;
-							}
+							itemWidth = itemWidth ? itemWidth : target.offsetWidth;
+							itemHeight = itemHeight ? itemHeight : target.offsetHeight;
+					    let offset=utils.offset(target)
+							_disX = +offset.left||0
+							_disY = +offset.top||0
+							target.style=`position:fixed;z-index:6;left:${_disX}px;top:${_disY}px;width:${itemWidth}px;height:${itemHeight}px`
 					}
 					function startInit(target,parent){
 						target.className = target.className ? target.className + ' touched' : 'touched';
-						target.parentNode.parentNode.style.zIndex = '9999'  //li元素
 						parent.className = parent.className.replace(/\s?transition/, '');
 					}
 					let checkCarshFun=utils.throttle(checkCrash,20)
@@ -127,10 +126,9 @@
                         _y = touch.clientY;
                         disX = _x - x;
                         disY = _y - y;
-
-                        parent.style.webkitTransform = parent.style.webkitTransform.replace(
-                            /translate3d\([\s\S]*\)/, '') + ' translate3d(' + (disX + _disX) + 'px,' + (
-                            disY + _disY) + 'px,0)';
+                        target.style.top=disY + _disY+'px';
+						target.style.left=disX + _disX+'px';
+              
                         let parentIndex = getIndex(parent, e.currentTarget.children);
                         checkCarshFun(parent, e.currentTarget.children, parentIndex)
                     }
@@ -147,9 +145,8 @@
                         let parent = e.target.parentNode;
                         target.className = target.className.replace(/\s?touched/, '');
                         parent.className = parent.className ? parent.className + ' transition' : 'transition';
-						target.parentNode.parentNode.style.zIndex = '1'
-                        parent.style.webkitTransform = parent.style.webkitTransform.replace(
-                            /translate3d\([\s\S]*\)/, '') + ' translate3d(0px,0px,0px)';
+						target.style="position:static;top:0px;left:0px;"
+ 
                     }
 
                     function getIndex(target, source) {
@@ -169,16 +166,15 @@
                             vm.activeItemList.splice(pos1, 1)
                         }
                         target.className = target.className.replace(/\s?touched/, '');
-                        target.style.webkitTransform = target.style.webkitTransform.replace(
-                                /translate3d\([\s\S]*\)/, '') + ' translate3d(' + disX + _disX + 'px,' + disY +
-                            _disY + 'px,0)';
+//                         target.style.webkitTransform = target.style.webkitTransform.replace(
+//                                 /translate3d\([\s\S]*\)/, '') + ' translate3d(' + disX + _disX + 'px,' + disY +
+//                             _disY + 'px,0)';
 
                         vm.$nextTick(() => {
                             //去除transition抖动
                             target.parentNode.className = target.parentNode.className.replace(
                                 /\s?list-add-move/, '');
-                            //更新
-                            waitAreaTop = document.getElementsByClassName('item-waitAdd')[0].offsetTop
+                   
                             //防止交换期间，多次触发碰撞
                             setTimeout(() => {
                                 flag = true
@@ -195,9 +191,10 @@
                             let y = targetTop - _offset.top
 
                             document.getElementsByClassName('list-add-leave-active')[0].className = ''
-                            dom.style.webkitTransform = 'translate3d(' + x + 'px,' + y + 'px,0)'
+                            // dom.style.webkitTransform = 'translate3d(' + x + 'px,' + y + 'px,0)'
                             setTimeout(function () {
-                                dom.style.webkitTransform = 'translate3d(0px,0px,0)'
+                                dom.style.top = '0px'
+								dom.style.left='0px'
                             }, 50)
                             setTimeout(() => {
                                 flag = true
@@ -206,25 +203,27 @@
                     }
 
                     function checkCrash(target, source, targetIndex) {
-                        let targetOffset = utils.offset(target)
-                        let targetTop = targetOffset.top + disY + _disY;
-                        let targetLeft = targetOffset.left + disX + _disX;
-                        itemWidth = itemWidth ? itemWidth : target.offsetWidth;
-                        itemHeight = itemHeight ? itemHeight : target.offsetHeight;
+                    
+                        let targetTop = disY+_disY ;
+                        let targetLeft = disX+_disX;
+                         
                         waitAreaTop = document.getElementsByClassName('item-waitAdd')[0].offsetTop  //计算wait区域的offsetTop
+						console.log(waitAreaTop)
+						console.log(targetTop)
                         for (let i = 1, len = source.length; i < len; i++) {
                             let ele = source[i].children[0];
                             let sourceOffset = utils.offset(ele)
                             let sourceTop = sourceOffset.top;
                             let sourceLeft = sourceOffset.left;
-
+                            
+							
                             if (ele !== target && !((targetTop > (sourceTop + 1 / 3 * itemHeight)) || ((targetTop +
                                     itemHeight) < (sourceTop + 2 / 3 * itemHeight)) || (targetLeft > (
                                     sourceLeft + 1 / 3 * itemWidth)) || ((targetLeft + itemWidth) < (
                                     sourceLeft + 2 / 3 * itemWidth)))) {
                                 if (flag) {
-                                    x = x + sourceLeft - targetOffset.left
-                                    y = y + sourceTop - targetOffset.top
+//                                     x = x + sourceLeft - targetOffset.left
+//                                     y = y + sourceTop - targetOffset.top
                                     disX = _x - x
                                     disY = _y - y
                                     flag = false;
@@ -499,7 +498,6 @@
 				color: @c2
 			}
             li {
-                position: relative;
                 margin-bottom: 6px;
                 padding-left: 12/16rem;
                 display: inline-block;

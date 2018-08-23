@@ -204,15 +204,15 @@
             showClassify(newVal) {
                 if (newVal) {
                     //暂时禁止滚动
-                    this.ws.setPullToRefresh({
-                        support: false
-                    });
-					mui('#refreshContainer').scroll().setStopped(true);//暂时启动滚动
+//                     this.ws.setPullToRefresh({
+//                         support: false
+//                     });
+
                 } else {
                     //mui('#refreshContainer').scroll().setStopped(false);//暂时启动滚动
-					this.ws.setPullToRefresh({
-						support: true
-					});
+// 					this.ws.setPullToRefresh({
+// 						support: true
+// 					});
                 }
             }
         }
