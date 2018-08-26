@@ -78,7 +78,6 @@
                         src: 'http://ww1.sinaimg.cn/large/663d3650gy1fplwwcynw2j20p00b4js9.jpg'
                     }
                 ],
-
             }
         },
         computed: {

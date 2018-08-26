@@ -44,7 +44,10 @@
         routesHash
     } from '../pages/index-content/routeConfig'
     import utils from '../assets/js/utils.js'
-	import {mapGetters,mapMutations} from 'vuex'
+    import {
+        mapGetters,
+        mapMutations
+    } from 'vuex'
     export default {
         name: 'homeSubNavbar',
         props: {
@@ -58,83 +61,92 @@
                     let vm = vnode.context,
                         refuse = false,
                         flag = true;
-                    let x, y, _x, _y, disX, disY, _disX, _disY;
-					let reg = /translate3d\(([0-9.]{1,})\w+,\s+([0-9.]{1,})\w+,\s+0\w+\)/;
+                    let x, y, _x, _y, disX, disY, _disX, _disY,timer;
+                    let reg = /translate3d\(([0-9.]{1,})\w+,\s+([0-9.]{1,})\w+,\s+0\w+\)/;
                     let waitAreaTop = '',
                         itemWidth = '',
                         itemHeight = '',
-						timer=''
+                        sourceData = []
                     el.ontouchstart = (e) => {
-                        // e.stopPropagation()
-						e.preventDefault()
+                        e.stopPropagation()
+                        e.preventDefault()
                         let target = e.target,
-						    parent = target.parentNode,
-						    touch = e.touches[0];
+                            parent = e.target.parentNode,
+                            targetClass = target.className,
+							source=e.currentTarget.children,
+							touch=e.touches[0]
+                            reg = /translate3d\(([0-9.]{1,})\w+,\s+([0-9.]{1,})\w+,\s+0\w+\)/;
 
-						if(!vm.editStatus){
-							timer=setTimeout(()=>{ 
-								 vm.editStatus=true;
-								 touchStart(target,parent,touch)
-								 startInit(target,parent)
-							},2000)
-							return
-						}
-                        if (!~target.className.indexOf('drag-content') || !!~target.className.indexOf('default')) {
+                        if (!vm.editStatus) {
+                            timer = setTimeout(() => {
+                                vm.editStatus = true;
+                                touchStart(target, parent, touch)
+                                startInit(target, parent,source)
+                            }, 2000)
+                            return
+                        }
+                        //默认元素非drag-content元素不能拖动
+                        if (!~target.className.indexOf('drag-content') || !!~target.className.indexOf(
+                                'default')) {
                             refuse = true;
                             return;
                         } else {
                             refuse = false;
                         }
+
                         if (!!~target.className.indexOf('drag-content')) {
-                            touchStart(target,parent,touch)
-							startInit(target,parent)
+
+                            touchStart(target, parent, touch)
+                            startInit(target, parent,source)
+
                         }
                     }
-					function touchStart(target,parent,touch){
-							x = touch.clientX;
-							y = touch.clientY;
-							let offset = utils.offset(target)
-							_disX = +offset.left||0
-							_disY = +offset.top||0
-							target.style=`position:fixed;left:${offset.left}px,top:${offset.top}px`
-					}
-					function startInit(target,parent){
-						target.className = target.className ? target.className + ' touched' : 'touched';
-						parent.className = parent.className.replace(/\s?transition/, '');
-					}
-					let checkCarshFun=utils.throttle(checkCrash,20)
+                    function touchStart(target, parent, touch) {
+                        let reg = /translate3d\(([0-9.]{1,})\w+,\s+([0-9.]{1,})\w+,\s+0\w+\)/;
+                        x = touch.clientX;
+                        y = touch.clientY;
+                        itemWidth = itemWidth ? itemWidth : target.offsetWidth;
+                        itemHeight = itemHeight ? itemHeight : target.offsetHeight;
+                        let offset = utils.offset(target)
+                        _disX = +offset.left || 0
+                        _disY = +offset.top || 0
+                        target.style =`position:fixed;z-index:6;left:${_disX}px;top:${_disY}px;width:${itemWidth}px;height:${itemHeight}px`
+                    }
+
+                    function startInit(target, parent,source) {
+                        target.className = target.className ? target.className + ' touched' : 'touched';
+                        parent.className = parent.className.replace(/\s?transition/, '');
+						sourceData=keepSourceData(target, source)
+                    }
+                    let checkCarshFun = utils.throttle(checkCrash, 20)
                     el.ontouchmove = (e) => {
-						e.preventDefault()
-						e.stopPropagation()
+                        e.stopPropagation()
+                        e.preventDefault()
                         if (refuse) {
                             return;
                         }
                         let touch = e.changedTouches[0];
                         let target = e.target;
-						let parent=e.target.parentNode;
-						let reg = /translate3d\(([0-9.]{1,})\w+,\s+([0-9.]{1,})\w+,\s+0\w+\)/;
-						if(!vm.editStatus){
-	                       touchStart(target,parent,touch)
-						   return
-						}
+                        let parent = e.target.parentNode;
+                        if (!vm.editStatus) {
+                            touchStart(target, parent, touch)
+                            return
+                        }
 
                         _x = touch.clientX;
                         _y = touch.clientY;
                         disX = _x - x;
                         disY = _y - y;
+                        target.style.top = disY + _disY + 'px';
+                        target.style.left = disX + _disX + 'px';
 
-                        parent.style.webkitTransform = parent.style.webkitTransform.replace(
-                            /translate3d\([\s\S]*\)/, '') + ' translate3d(' + (disX + _disX) + 'px,' + (
-                            disY + _disY) + 'px,0)';
                         let parentIndex = getIndex(parent, e.currentTarget.children);
                         checkCarshFun(parent, e.currentTarget.children, parentIndex)
                     }
                     el.ontouchend = (e) => {
-						e.preventDefault()
-						if(timer){
-							clearTimeout(timer)
-						}
-                        if (refuse||!vm.editStatus) {
+                        e.stopPropagation()
+                        e.preventDefault()
+                        if (refuse) {
                             return;
                         }
                         let touch = e.touches[0];
@@ -142,9 +154,8 @@
                         let parent = e.target.parentNode;
                         target.className = target.className.replace(/\s?touched/, '');
                         parent.className = parent.className ? parent.className + ' transition' : 'transition';
-						target.parentNode.parentNode.style.zIndex = '1'
-                        parent.style.webkitTransform = parent.style.webkitTransform.replace(
-                            /translate3d\([\s\S]*\)/, '') + ' translate3d(0px,0px,0px)';
+                        target.style = "position:relative;top:0px;left:0px;"
+
                     }
 
                     function getIndex(target, source) {
@@ -155,25 +166,27 @@
                         }
                     }
 
+
                     function switchPos(pos1, pos2, target) {
                         if (pos1 > pos2) {
-                            vm.activeItemList.splice(pos2, 1, vm.activeItemList[pos1], vm.activeItemList[pos2])
+                            vm.activeItemList.splice(pos2, 1, vm.activeItemList[pos1], vm.activeItemList[
+                                pos2])
                             vm.activeItemList.splice(pos1 + 1, 1)
                         } else {
-                            vm.activeItemList.splice(pos2, 1, vm.activeItemList[pos2], vm.activeItemList[pos1])
+                            vm.activeItemList.splice(pos2, 1, vm.activeItemList[pos2], vm.activeItemList[
+                                pos1])
                             vm.activeItemList.splice(pos1, 1)
                         }
                         target.className = target.className.replace(/\s?touched/, '');
-                        target.style.webkitTransform = target.style.webkitTransform.replace(
-                                /translate3d\([\s\S]*\)/, '') + ' translate3d(' + disX + _disX + 'px,' + disY +
-                            _disY + 'px,0)';
+                        //                         target.style.webkitTransform = target.style.webkitTransform.replace(
+                        //                                 /translate3d\([\s\S]*\)/, '') + ' translate3d(' + disX + _disX + 'px,' + disY +
+                        //                             _disY + 'px,0)';
 
                         vm.$nextTick(() => {
                             //去除transition抖动
                             target.parentNode.className = target.parentNode.className.replace(
                                 /\s?list-add-move/, '');
-                            //更新
-                            waitAreaTop = document.getElementsByClassName('item-waitAdd')[0].offsetTop
+
                             //防止交换期间，多次触发碰撞
                             setTimeout(() => {
                                 flag = true
@@ -181,7 +194,7 @@
                         })
                     }
 
-                    function changeItem(targetIndex, targetLeft, targetTop) {
+                    function changeItem(targetIndex, targetLeft, targetTop,target,source) {
                         vm.waitItemList.push(vm.activeItemList.splice(targetIndex, 1)[0])
                         vm.$nextTick(() => {
                             let dom = document.getElementsByClassName('list-wait-enter')[0]
@@ -189,67 +202,81 @@
                             let x = targetLeft - _offset.left
                             let y = targetTop - _offset.top
 
-                            document.getElementsByClassName('list-add-leave-active')[0].className = ''
-                            dom.style.webkitTransform = 'translate3d(' + x + 'px,' + y + 'px,0)'
+                            document.getElementsByClassName('list-add-leave-active')[0].className =
+                                ''
+                            // dom.style.webkitTransform = 'translate3d(' + x + 'px,' + y + 'px,0)'
                             setTimeout(function () {
-                                dom.style.webkitTransform = 'translate3d(0px,0px,0)'
+                                dom.style.top = '0px'
+                                dom.style.left = '0px'
                             }, 50)
                             setTimeout(() => {
                                 flag = true
-                            }, 300)
+                                sourceData = keepSourceData(target, source)
+                            }, 500)
                         })
                     }
 
-                    function checkCrash(target, source, targetIndex) {
-                        let targetOffset = utils.offset(target)
-                        let targetTop = targetOffset.top + disY + _disY;
-                        let targetLeft = targetOffset.left + disX + _disX;
-                        itemWidth = itemWidth ? itemWidth : target.offsetWidth;
-                        itemHeight = itemHeight ? itemHeight : target.offsetHeight;
-                        waitAreaTop = document.getElementsByClassName('item-waitAdd')[0].offsetTop  //计算wait区域的offsetTop
-                        for (let i = 1, len = source.length; i < len; i++) {
+                    function keepSourceData(target, source) {
+                        let sourceData = []
+                        waitAreaTop = document.getElementsByClassName('item-waitAdd')[0].offsetTop
+                        for (let i = 0, len = source.length; i < len; i++) {
                             let ele = source[i].children[0];
                             let sourceOffset = utils.offset(ele)
                             let sourceTop = sourceOffset.top;
                             let sourceLeft = sourceOffset.left;
+                            sourceData.push({
+                                ele: ele,
+                                top: sourceTop,
+                                left: sourceLeft
+                            })
+                        }
+                        return sourceData
+                    }
 
-                            if (ele !== target && !((targetTop > (sourceTop + 1 / 3 * itemHeight)) || ((targetTop +
+                    function checkCrash(target, source, targetIndex) {
+                        let targetTop = disY + _disY;
+                        let targetLeft = disX + _disX;
+                        for (let i = 1, len = sourceData.length; i < len; i++) {
+                            let sourceTop = sourceData[i].top;
+                            let sourceLeft = sourceData[i].left;
+                            if (sourceData[i].ele !== target && !((targetTop > (sourceTop + 1 / 3 *
+                                    itemHeight)) || ((targetTop +
                                     itemHeight) < (sourceTop + 2 / 3 * itemHeight)) || (targetLeft > (
                                     sourceLeft + 1 / 3 * itemWidth)) || ((targetLeft + itemWidth) < (
                                     sourceLeft + 2 / 3 * itemWidth)))) {
                                 if (flag) {
-                                    x = x + sourceLeft - targetOffset.left
-                                    y = y + sourceTop - targetOffset.top
+                                    //                                     x = x + sourceLeft - targetOffset.left
+                                    //                                     y = y + sourceTop - targetOffset.top
                                     disX = _x - x
                                     disY = _y - y
                                     flag = false;
-                                    switchPos(targetIndex, i, target)
+                                    switchPos(targetIndex, i, target, source)
                                 }
                             }
-
                             if ((targetTop + itemHeight) > (+waitAreaTop +
                                     20)) {
                                 if (flag) {
                                     flag = false
-                                    changeItem(targetIndex, targetLeft, targetTop)
+                                    changeItem(targetIndex, targetLeft, targetTop, target, source)
                                 }
 
                             }
                         }
-
                     }
-                }
+            
+
             }
+        }
+    },
+    computed: {
+            ...mapGetters(['showClassify'])
         },
-		computed:{
-		    ...mapGetters(['showClassify'])
-		},
         data() {
             return {
                 currentVal: 0,
                 editStatus: false,
                 waitItemList: [],
-				navbarWidth:0,
+                navbarWidth: 0,
                 activeItemList: [{
                     label: '推荐',
                     name: 'recommend'
@@ -301,10 +328,10 @@
                 indicators: false, //是否显示滚动条
                 bounce: false //是否启用回弹
             });
-			this.navbarWidth=document.getElementById('homeSubNavbar').offsetWidth
+            this.navbarWidth = document.getElementById('homeSubNavbar').offsetWidth
         },
         methods: {
-			...mapMutations(['updateShowClassify']),
+            ...mapMutations(['updateShowClassify']),
             _waitItemList() {
                 let _routesHash = Object.assign({}, routesHash)
                 this.activeItemList.forEach(ele => {
@@ -318,12 +345,12 @@
             _clickItem(name) {
                 this.currentVal = name
                 this.$emit('input', name)
-				
+
             },
             _clickAddedItem(e, name) {
                 this.currentVal = name
                 this.$emit('input', name)
-				this.updateShowClassify(false)
+                this.updateShowClassify(false)
             },
             _clickWaitItem(e, index) {
                 this.activeItemList.push(this.waitItemList.splice(index, 1)[0])
@@ -342,7 +369,7 @@
                     let y = offset.top - _offset.top
                     dom.style.webkitTransform = 'translate3d(' + x + 'px,' + y + 'px,0)'
                     setTimeout(function () {
-                        dom.style.webkitTransform = 'translate3d(0px,0px,0)'
+                        dom.style.webkitTransform = 'none'
                     }, 50)
                 })
 
@@ -358,26 +385,27 @@
 
                     dom.style.webkitTransform = 'translate3d(' + x + 'px,' + y + 'px,0)'
                     setTimeout(function () {
-                        dom.style.webkitTransform = 'translate3d(0px,0px,0)'
+                        dom.style.webkitTransform = 'none'
                     }, 50)
                 })
             }
-
         },
         watch: {
             value(newVal) {
                 this.currentVal = newVal;
-				let selectDom=document.querySelector('.itemlist .selected')
-			    if(Math.abs((selectDom.offsetLeft+selectDom.offsetWidth/2+20)-(this.navbarWidth-70)/2)>50){
-					 mui('#homeSubNavbar').scroll().scrollTo(-(this.navbarWidth-70)/2-(this.navbarWidth-70)/2,0,100);//100毫秒滚动到顶
-				}
-				
+                let selectDom = document.querySelector('.itemlist .selected')
+                if (Math.abs((selectDom.offsetLeft + selectDom.offsetWidth / 2 + 20) - (this.navbarWidth - 70) / 2) >
+                    50) {
+                    mui('#homeSubNavbar').scroll().scrollTo(-(this.navbarWidth - 70) / 2 - (this.navbarWidth - 70) /
+                        2, 0, 100); //100毫秒滚动到顶
+                }
+
             }
         }
     }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
+
 <style lang="less" scoped>
     @import '../assets/css/variables.less';
     .homeSubNavbar {
@@ -387,16 +415,16 @@
 
     .mui-scroll-wrapper {
         position: fixed;
-		z-index:1;
+        z-index: 1;
         padding-left: 20px;
-		padding-right:50px;
+        padding-right: 50px;
         box-sizing: border-box;
         overflow: hidden;
     }
 
     .mui-scroll {
         position: absolute;
-		z-index:2;
+        z-index: 2;
     }
 
     .itemlist {
@@ -408,12 +436,10 @@
             line-height: 40px;
             color: #333;
         }
-		.selected {
-			color: @c2
-		}
+        .selected {
+            color: @c2
+        }
     }
-
-
 
     .default {
         opacity: 0.75
@@ -445,15 +471,15 @@
             font-size: 28px;
             line-height: 40px;
             vertical-align: top;
-			transition:transform 0.3s;
+            transition: transform 0.3s;
         }
-		&.active{
-			box-shadow: none;
-			span{
-				transform:rotate3d(0,0,1,45deg);
-				transform-origin: center center;
-			}
-		}
+        &.active {
+            box-shadow: none;
+            span {
+                transform: rotate3d(0, 0, 1, 45deg);
+                transform-origin: center center;
+            }
+        }
     }
 
     .classify {
@@ -465,11 +491,11 @@
         background: #fff;
         z-index: 5;
         padding: 0 15px;
-		transform:translate3d(0,-100%,0);
-		transition:transform 0.3s;
-		&.active{
-			transform:translate3d(0,0,0);
-		}
+        transform: translate3d(0, -100%, 0);
+        transition: transform 0.3s;
+        &.active {
+            transform: translate3d(0, 0, 0);
+        }
         .header {
             .vc;
             line-height: 40px;
@@ -490,11 +516,10 @@
         .item-list {
             .fs(@f12);
             margin-left: -12/16rem;
-			.selected {
-				color: @c2
-			}
+            .selected {
+                color: @c2
+            }
             li {
-                position: relative;
                 margin-bottom: 6px;
                 padding-left: 12/16rem;
                 display: inline-block;
@@ -521,16 +546,16 @@
                 animation-fill-mode: both;
             }
             .transition {
-                transition: all 0.3s;
+                transition: transform 0.5s;
             }
             .list-add-move,
             .list-wait-move {
-                transition: all 0.3s;
+                transition: transform 0.5s;
             }
 
             .list-add-enter-to,
             .list-wait-enter-to {
-                transition: all 0.3s;
+                transition: transform 0.5s;
             }
             .list-add-leave-active,
             .list-wait-leave-active {
