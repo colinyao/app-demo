@@ -59,6 +59,7 @@
                         refuse = false,
                         flag = true;
                     let x, y, _x, _y, disX, disY, _disX, _disY;
+					let reg = /translate3d\(([0-9.]{1,})\w+,\s+([0-9.]{1,})\w+,\s+0\w+\)/;
                     let waitAreaTop = '',
                         itemWidth = '',
                         itemHeight = '',
@@ -90,21 +91,15 @@
                         }
                     }
 					function touchStart(target,parent,touch){
-						let reg = /translate3d\(([0-9.]{1,})\w+,\s+([0-9.]{1,})\w+,\s+0\w+\)/;
 							x = touch.clientX;
 							y = touch.clientY;
-							let trans = reg.exec(parent.style.webkitTransform) || []
-							if (trans.length) {
-								_disX = +trans[1]
-								_disY = +trans[2]
-							} else {
-								_disX = 0;
-								_disY = 0;
-							}
+							let offset = utils.offset(target)
+							_disX = +offset.left||0
+							_disY = +offset.top||0
+							target.style=`position:fixed;left:${offset.left}px,top:${offset.top}px`
 					}
 					function startInit(target,parent){
 						target.className = target.className ? target.className + ' touched' : 'touched';
-						target.parentNode.parentNode.style.zIndex = '9999'  //li元素
 						parent.className = parent.className.replace(/\s?transition/, '');
 					}
 					let checkCarshFun=utils.throttle(checkCrash,20)

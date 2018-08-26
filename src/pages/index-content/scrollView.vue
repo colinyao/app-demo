@@ -141,7 +141,7 @@
                 }
             });
             setTimeout(_ => {
-                mui('#refreshContainer').pullRefresh().enablePullupToRefresh();
+                mui('#refreshContainer').pullRefresh().enablePullupToRefresh();			
             }, 200)
             this.$refs.previewer.$on('on-close', () => {
                 if (this.ws) {
@@ -150,8 +150,6 @@
                     });
                 }
             })
-
-
         },
         methods: {
             _pulldown() {
@@ -204,19 +202,24 @@
             showClassify(newVal) {
                 if (newVal) {
                     //暂时禁止滚动
-                    this.ws.setPullToRefresh({
-                        support: false
-                    });
-					mui('#refreshContainer').scroll().setStopped(true);//暂时启动滚动
+//                     this.ws.setPullToRefresh({
+//                         support: false
+//                     });
+// 					document.addEventListener('touchstart',preventMove)
+					//mui('#refreshContainer').pullRefresh().disablePullupToRefresh();
                 } else {
                     //mui('#refreshContainer').scroll().setStopped(false);//暂时启动滚动
-					this.ws.setPullToRefresh({
-						support: true
-					});
+// 					this.ws.setPullToRefresh({
+// 						support: true
+// 					});
+// 					document.removeEventListener('touchstart',preventMove)
                 }
             }
         }
     }
+	function preventMove(e){
+		e.preventDefault();
+	}
 </script>
 <style lang="less" scoped>
     @import '../../assets/css/variables.less';
