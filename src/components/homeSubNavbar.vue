@@ -393,12 +393,20 @@
         watch: {
             value(newVal) {
                 this.currentVal = newVal;
-                let selectDom = document.querySelector('.itemlist .selected')
-                if (Math.abs((selectDom.offsetLeft + selectDom.offsetWidth / 2 + 20) - (this.navbarWidth - 70) / 2) >
-                    50) {
-                    mui('#homeSubNavbar').scroll().scrollTo(-(this.navbarWidth - 70) / 2 - (this.navbarWidth - 70) /
-                        2, 0, 100); //100毫秒滚动到顶
-                }
+				this.$nextTick(()=>{
+					let selectDom = document.querySelector('.itemlist .selected');
+					let maxWidth=document.querySelector('.itemlist').offsetWidth-this.navbarWidth+70;
+					console.log(this.navbarWidth)
+					if (Math.abs((selectDom.offsetLeft + selectDom.offsetWidth / 2 + 20) - (this.navbarWidth - 70) / 2) >50) {
+						var dis=-(selectDom.offsetLeft-(this.navbarWidth - 70) / 2);
+						if(dis>0)dis=0;
+						if(-dis>maxWidth)dis=-maxWidth;
+						console.log(maxWidth)
+						console.log(dis)
+						mui('#homeSubNavbar').scroll().scrollTo(dis, 0, 200); //100毫秒滚动到顶
+					}
+				})
+                
 
             }
         }
